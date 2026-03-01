@@ -116,6 +116,9 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 # ── Carga de datos ─────────────────────────────────────────────────────────
+MESES = {1:"Ene",2:"Feb",3:"Mar",4:"Abr",5:"May",6:"Jun",
+         7:"Jul",8:"Ago",9:"Sep",10:"Oct",11:"Nov",12:"Dic"}
+
 @st.cache_data
 def load_all():
     bsc     = pd.read_csv(os.path.join(PROC, "kpi_bsc_mensual.csv"))
@@ -128,23 +131,6 @@ def load_all():
     jugs    = pd.read_csv(os.path.join(DATA, "dim_jugador.csv"))
     inv     = pd.read_csv(os.path.join(DATA, "inventario_clubes.csv"))
 
-    MESES = {1:"Ene",2:"Feb",3:"Mar",4:"Abr",5:"May",6:"Jun",
-             7:"Jul",8:"Ago",9:"Sep",10:"Oct",11:"Nov",12:"Dic"}
-    bsc["periodo"] = pd.to_datetime(
-        bsc["anio"].astype(str) + "-" + bsc["mes"].astype(str).str.zfill(2)
-    )
-    # Etiqueta en español para eje X categórico (evita locale inglés de Plotly)
-    bsc["periodo_lbl"] = bsc.apply(
-        lambda r: f"{MESES[int(r['mes'])]} {int(r['anio'])}", axis=1
-    )
-    res["fecha_dt"]  = pd.to_datetime(res["id_fecha"], format="%Y%m%d")
-    res["anio"]      = res["fecha_dt"].dt.year
-    res["mes"]       = res["fecha_dt"].dt.month
-    res["periodo"]   = res["fecha_dt"].dt.to_period("M").dt.to_timestamp()
-    res["periodo_lbl"] = res.apply(
-        lambda r: f"{MESES[int(r['mes'])]} {int(r['anio'])}", axis=1
-    )
-
     fricc = fricc.merge(clubs[["id_club","nombre_club"]], on="id_club", how="left")
     noshow= noshow.merge(clubs[["id_club","nombre_club"]], on="id_club", how="left")
     res   = res.merge(clubs[["id_club","nombre_club"]], on="id_club", how="left")
@@ -153,8 +139,17 @@ def load_all():
 
 bsc, res, cancel, noshow, ratings, fricc, clubs, jugs, inv = load_all()
 
-MESES_ES = {1:"Ene",2:"Feb",3:"Mar",4:"Abr",5:"May",6:"Jun",
-            7:"Jul",8:"Ago",9:"Sep",10:"Oct",11:"Nov",12:"Dic"}
+# Columnas derivadas fuera del cache para que siempre estén presentes
+bsc["periodo"] = pd.to_datetime(
+    bsc["anio"].astype(str) + "-" + bsc["mes"].astype(str).str.zfill(2)
+)
+bsc["periodo_lbl"] = bsc["mes"].map(MESES) + " " + bsc["anio"].astype(str)
+
+res["fecha_dt"]    = pd.to_datetime(res["id_fecha"], format="%Y%m%d")
+res["anio"]        = res["fecha_dt"].dt.year
+res["mes"]         = res["fecha_dt"].dt.month
+res["periodo"]     = res["fecha_dt"].dt.to_period("M").dt.to_timestamp()
+res["periodo_lbl"] = res["mes"].map(MESES) + " " + res["anio"].astype(str)
 
 # ── layout helpers ────────────────────────────────────────────────────────
 PLOT_LAYOUT = dict(
@@ -192,7 +187,7 @@ with st.sidebar:
     mes_sel = st.multiselect(
         "Mes", meses_disp,
         default=meses_disp,
-        format_func=lambda m: MESES_ES[m]
+        format_func=lambda m: MESES[m]
     )
 
     nse_opts = sorted(res["nse_jugador"].dropna().unique())
