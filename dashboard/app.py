@@ -167,6 +167,11 @@ _YAXIS_DEF = dict(showgrid=True, gridcolor="#e8ede8", zeroline=False,
                   tickfont=_FONT_AXIS, title_font=_FONT_AXIS)
 
 def apply_layout(fig, height=300, **kw):
+    # Absorber xaxis_title / yaxis_title sueltos y meterlos en sus dicts
+    if "xaxis_title" in kw:
+        kw.setdefault("xaxis", {})["title"] = kw.pop("xaxis_title")
+    if "yaxis_title" in kw:
+        kw.setdefault("yaxis", {})["title"] = kw.pop("yaxis_title")
     # Merge xaxis / yaxis defaults con lo que pase el caller
     xaxis = {**_XAXIS_DEF, **(kw.pop("xaxis", {}) or {})}
     yaxis = {**_YAXIS_DEF, **(kw.pop("yaxis", {}) or {})}
