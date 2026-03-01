@@ -375,8 +375,10 @@ with tab_resumen:
         margin=dict(t=50,b=30,l=10,r=10),
         barmode="relative",
     )
-    fig4.update_xaxes(tickfont=_FONT_AXIS, title_font=_FONT_AXIS)
-    fig4.update_yaxes(tickfont=_FONT_AXIS, title_font=_FONT_AXIS)
+    fig4.update_xaxes(showgrid=False, zeroline=False,
+                      tickfont=_FONT_AXIS, title_font=_FONT_AXIS)
+    fig4.update_yaxes(showgrid=True, gridcolor="#e8ede8", zeroline=False,
+                      tickfont=_FONT_AXIS, title_font=_FONT_AXIS)
     st.plotly_chart(fig4, use_container_width=True)
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -556,11 +558,13 @@ with tab_cliente:
                       margin=dict(t=10,b=10),
                       legend=dict(orientation="h", y=1.1,
                                   font=dict(color=GRIS_TEXT)))
+    fig.update_xaxes(showgrid=False, zeroline=False,
+                     tickfont=_FONT_AXIS, title_font=_FONT_AXIS)
     fig.update_yaxes(title_text="Usuarios activos", secondary_y=False,
-                     showgrid=True, gridcolor="#e8ede8",
+                     showgrid=True, gridcolor="#e8ede8", zeroline=False,
                      tickfont=_FONT_AXIS, title_font=_FONT_AXIS)
     fig.update_yaxes(title_text="Tasa de recompra (%)", secondary_y=True,
-                     showgrid=False,
+                     showgrid=False, zeroline=False,
                      tickfont=_FONT_AXIS, title_font=_FONT_AXIS)
     st.plotly_chart(fig, use_container_width=True)
 
