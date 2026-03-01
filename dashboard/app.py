@@ -154,8 +154,11 @@ PLOT_LAYOUT = dict(
     margin=dict(t=20, b=30, l=10, r=10),
 )
 
-_XAXIS_DEF = dict(showgrid=False, zeroline=False, color=GRIS_TEXT)
-_YAXIS_DEF = dict(showgrid=True, gridcolor="#e8ede8", zeroline=False, color=GRIS_TEXT)
+_FONT_AXIS = dict(color=GRIS_TEXT, size=11)
+_XAXIS_DEF = dict(showgrid=False, zeroline=False,
+                  tickfont=_FONT_AXIS, title_font=_FONT_AXIS)
+_YAXIS_DEF = dict(showgrid=True, gridcolor="#e8ede8", zeroline=False,
+                  tickfont=_FONT_AXIS, title_font=_FONT_AXIS)
 
 def apply_layout(fig, height=300, **kw):
     # Merge xaxis / yaxis defaults con lo que pase el caller
@@ -483,10 +486,8 @@ with tab_cliente:
     sec("Ratings por NSE y Aspecto")
     c_l, c_r = st.columns(2)
     with c_l:
-        nse_rat = ratings.merge(
-            res[["id_reserva","nse_jugador"]], on="id_reserva", how="left"
-        )
-        nse_mean = nse_rat.groupby("nse_jugador")["rating_promedio"].mean().reset_index()
+        # fact_ratings ya contiene nse_jugador — no necesita merge con res
+        nse_mean = ratings.groupby("nse_jugador")["rating_promedio"].mean().reset_index()
         nse_order = {"AB":0,"Cmas":1,"C":2,"Dmas":3}
         nse_mean["orden"] = nse_mean["nse_jugador"].map(nse_order)
         nse_mean = nse_mean.sort_values("orden")
