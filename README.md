@@ -1,18 +1,15 @@
-# GoGolf — Datamart Sintético y Dashboard Estratégico BSC
+# Datamart Sintético y Dashboard Estratégico BSC
+## Plataforma de Reservas de Golf · México
 
-<p align="center">
-  <img src="https://gogolf.mx/build/images/logo-dark.svg" height="60" alt="GoGolf"/>
-</p>
-
-> **GoGolf** ([gogolf.mx](https://gogolf.mx)) es una plataforma digital que democratiza el acceso a los campos de golf en México, conectando a jugadores no socios con clubes que aceptan reservas externas mediante el pago del green fee correspondiente.
+> Plataforma digital que democratiza el acceso a campos de golf en México, conectando jugadores externos con clubes que aceptan reservas mediante green fee, sin necesidad de membresía ni anualidad.
 
 ---
 
 ## Nota sobre confidencialidad
 
-> Debido a que GoGolf se encuentra actualmente en **fases críticas de levantamiento de capital y auditoría de procesos**, se ha optado por utilizar un **Entorno de Datos Sintéticos de Alta Fidelidad** para este análisis. Este modelo replica las distribuciones probabilísticas, estacionalidades y reglas de negocio reales de la plataforma, permitiendo proyectar metas estratégicas sin comprometer la confidencialidad transaccional de la compañía durante sus rondas de inversión.
+> Debido a que la empresa se encuentra actualmente en **fases críticas de levantamiento de capital y auditoría de procesos**, se ha optado por utilizar un **Entorno de Datos Sintéticos de Alta Fidelidad** para este análisis. Este modelo replica las distribuciones probabilísticas, estacionalidades y reglas de negocio reales de la plataforma, permitiendo proyectar metas estratégicas sin comprometer la confidencialidad transaccional durante sus rondas de inversión.
 
-Los precios de green fee y los 14 clubes son **reales**, extraídos directamente de gogolf.mx. Las distribuciones de lluvia provienen del **SMN/CONAGUA** y la segmentación socioeconómica sigue la **Regla NSE AMAI 2022**.
+Los precios de green fee y los 14 clubes son **reales**, extraídos directamente del sitio de la empresa. Las distribuciones de lluvia provienen del **SMN/CONAGUA** y la segmentación socioeconómica sigue la **Regla NSE AMAI 2022**.
 
 ---
 
@@ -27,6 +24,23 @@ streamlit run dashboard/app.py
 
 ---
 
+## SIPOC del Proceso de Reserva
+
+| **S — Suppliers** | **I — Inputs** | **P — Process** | **O — Outputs** | **C — Customers** |
+|---|---|---|---|---|
+| Clubes de golf (14) | Disponibilidad de tee times | 1. Jugador busca campo | Reserva confirmada | Jugador externo |
+| Jugadores registrados | Perfil del jugador (NSE, handicap) | 2. Plataforma filtra por fecha/estado | Notificación al club | Club de golf |
+| Pasarela de pago | Green fee publicado | 3. Jugador selecciona horario | Ingreso (green fee) | Plataforma (comisión) |
+| Sistema de inventario | Requisitos de acceso del club | 4. Validación de requisitos de entrada | Comisión 8–12% | — |
+| SMN/CONAGUA (lluvia) | Probabilidad de lluvia regional | 5. Pago y confirmación | Rating post-juego | — |
+| — | Historial de reservas | 6. Juego completado o cancelado/no-show | KPIs BSC mensuales | — |
+
+**Restricciones de calidad identificadas en el proceso:**
+- Paso 4 (validación de requisitos): el 58.1% de las reservas presentan al menos un evento de fricción social no detectado antes de la confirmación.
+- Paso 6 (resultado): tasa de no-show del 16.3%, más del doble del benchmark sectorial (6–8%).
+
+---
+
 ## Hallazgos Estratégicos
 
 Los hallazgos se presentan alineados con la lógica causa–efecto del Balanced Scorecard:
@@ -38,7 +52,7 @@ Los hallazgos se presentan alineados con la lógica causa–efecto del Balanced 
 
 #### Hallazgo 1: La base de clientes es mayoritariamente NSE medio-bajo — la misión democratizadora funciona, pero genera fricción
 
-El **53% de los jugadores registrados** pertenecen a los segmentos NSE C y D+, con ingresos familiares por debajo de $35,000 MXN/mes. GoGolf está atrayendo al perfil de usuario que declara querer servir: el jugador que desea acceder al golf sin ser socio de un club privado.
+El **53% de los jugadores registrados** pertenecen a los segmentos NSE C y D+, con ingresos familiares por debajo de $35,000 MXN/mes. La plataforma está atrayendo al perfil de usuario que declara querer servir: el jugador que desea acceder al golf sin ser socio de un club privado.
 
 Sin embargo, el **58.1% de todas las reservas presentan al menos un evento de fricción social**: dress code no conocido, equipo propio requerido pero no disponible, handicap excedido, o insuficiente anticipación de reserva. Esta fricción es la causa raíz de los problemas en todas las perspectivas superiores del BSC.
 
@@ -64,7 +78,7 @@ La tasa de no-show promedio mensual es **16.3%**, significativamente superior al
 
 ![No-Show y Cumplimiento de Horario](assets/03a_noshow_cumplimiento.png)
 
-La **pérdida total estimada** por no-shows en el período 2023–2024 asciende a **$25.3 millones MXN** — cada slot vacío representa ingreso irrecuperable para el club y pérdida de comisión para GoGolf.
+La **pérdida total estimada** por no-shows en el período 2023–2024 asciende a **$25.3 millones MXN** — cada slot vacío representa ingreso irrecuperable para el club y pérdida de comisión para la plataforma.
 
 #### Hallazgo 3: El cumplimiento de horario (85.7%) y las discrepancias de inventario (3.7%) son fricciones del modelo marketplace
 
@@ -84,11 +98,11 @@ El **NPS proxy promedio es -7.4**, con más detractores que promotores en la bas
 
 ![NPS Proxy y Rating Mensual](assets/02a_nps_rating.png)
 
-La divergencia entre NPS negativo y rating aceptable indica que el problema no es la calidad del golf, sino la **experiencia de reserva**: el jugador llega al club y encuentra requisitos que no conocía, o el horario no está disponible a pesar de la confirmación. El detractor no está insatisfecho con el campo — está insatisfecho con el proceso de GoGolf.
+La divergencia entre NPS negativo y rating aceptable indica que el problema no es la calidad del golf, sino la **experiencia de reserva**: el jugador llega al club y encuentra requisitos que no conocía, o el horario no está disponible a pesar de la confirmación.
 
 #### Hallazgo 5: La tasa de recompra del 56.8% es una señal positiva, pero está concentrada en NSE alto
 
-La tasa de recompra promedio es **56.8%** — más de la mitad de usuarios activos reservan más de una vez al mes. Este es el activo más valioso de GoGolf: quienes superan la barrera inicial y tienen una buena experiencia regresan.
+La tasa de recompra promedio es **56.8%** — más de la mitad de usuarios activos reservan más de una vez al mes. Este es el activo más valioso del negocio: quienes superan la barrera inicial y tienen una buena experiencia regresan.
 
 ![Recompra y Usuarios Activos](assets/02b_recompra_usuarios.png)
 
@@ -137,6 +151,151 @@ Los meses de mayo–agosto y diciembre concentran la demanda. Febrero y noviembr
 
 ---
 
+## Diseño del Datamart — Esquema Entidad-Relación
+
+```mermaid
+erDiagram
+    dim_fecha {
+        string id_fecha PK
+        int anio
+        int mes
+        int dia
+        string dia_semana
+        string temporada
+        bool es_festivo
+        float prob_lluvia
+    }
+    dim_club {
+        string id_club PK
+        string nombre_club
+        string tipo_club
+        string estado
+        string ciudad
+        int num_hoyos
+        int par_total
+        float green_fee_min
+        float green_fee_max
+        bool requisito_dress_code
+        bool requiere_equipo_propio
+        int handicap_maximo
+        int dias_anticipacion_min
+        string nse_minimo_acceso
+        float latitud
+        float longitud
+    }
+    dim_campo {
+        string id_campo PK
+        string tipo_campo
+        int num_hoyos
+        float multiplicador_precio
+    }
+    dim_jugador {
+        string id_jugador PK
+        string nse_jugador
+        int handicap
+        string canal_adquisicion
+        bool tiene_equipo_propio
+        bool conoce_dress_code
+        string estado_residencia
+    }
+    fact_reservas {
+        string id_reserva PK
+        string id_fecha FK
+        string id_club FK
+        string id_campo FK
+        string id_jugador FK
+        string estatus_reserva
+        float green_fee_unitario_mxn
+        int num_jugadores
+        float ingreso_total_mxn
+        float comision_gogolf_mxn
+        float costo_variable_mxn
+        float margen_por_transaccion
+        string hay_friccion_social
+        string nse_jugador
+        float prob_lluvia_dia
+    }
+    fact_cancelaciones {
+        string id_cancelacion PK
+        string id_reserva FK
+        string motivo_cancelacion
+        string tipo_cancelacion
+        float penalizacion_pct
+        float ingreso_cancelado_mxn
+    }
+    fact_noshow {
+        string id_noshow PK
+        string id_reserva FK
+        string id_club FK
+        string causa_principal
+        int num_jugadores_noshow
+        float perdida_estimada_club_mxn
+        float comision_perdida_gogolf_mxn
+        float perdida_total_estimada_mxn
+    }
+    fact_ratings {
+        string id_rating PK
+        string id_reserva FK
+        float experiencia_general
+        float condicion_campo
+        float servicio_club
+        float facilidad_reserva
+        float relacion_precio_valor
+        float rating_promedio
+        string nps_categoria
+    }
+    fact_fricciones {
+        string id_friccion PK
+        string id_reserva FK
+        string id_club FK
+        string tipo_friccion
+        string descripcion
+    }
+    inventario_clubes {
+        string id_inv PK
+        string id_club FK
+        int anio
+        int mes
+        int slots_totales
+        int slots_ocupados
+        int slots_disponibles
+        float tasa_ocupacion_pct
+        float pct_discrepancia_inventario
+    }
+    kpi_bsc_mensual {
+        string id_periodo PK
+        int anio
+        int mes
+        int total_reservas
+        float ingreso_promedio_por_reserva
+        float comision_total_gogolf_mxn
+        float costo_variable_total_mxn
+        float utilidad_neta_estimada_mxn
+        float margen_promedio_por_transaccion
+        float tasa_cancelacion_pct
+        float nps_proxy
+        float rating_promedio_mes
+        float tasa_recompra_pct
+        int total_usuarios_activos_mes
+        float pct_cumplimiento_horario
+        float pct_discrepancia_inventario
+        float tasa_noshow_pct
+        float pct_friccion_social
+    }
+
+    dim_fecha     ||--o{ fact_reservas : "id_fecha"
+    dim_club      ||--o{ fact_reservas : "id_club"
+    dim_campo     ||--o{ fact_reservas : "id_campo"
+    dim_jugador   ||--o{ fact_reservas : "id_jugador"
+    fact_reservas ||--o| fact_cancelaciones : "id_reserva"
+    fact_reservas ||--o| fact_noshow        : "id_reserva"
+    fact_reservas ||--o| fact_ratings       : "id_reserva"
+    fact_reservas ||--o{ fact_fricciones    : "id_reserva"
+    dim_club      ||--o{ inventario_clubes  : "id_club"
+```
+
+---
+
 ## Estructura del Repositorio
 
 ```
@@ -144,7 +303,7 @@ golf_simulation_data/
 │
 ├── data/
 │   ├── raw/                       # Tablas del datamart (dims + facts)
-│   │   ├── dim_club.csv               # 14 clubes reales de gogolf.mx
+│   │   ├── dim_club.csv               # 14 clubes reales
 │   │   ├── dim_campo.csv              # Tipos de campo con multiplicador de precio
 │   │   ├── dim_fecha.csv              # Calendario 2023-2024 (temporada, festivos)
 │   │   ├── dim_jugador.csv            # 2,000 perfiles con NSE, handicap, canal
@@ -154,16 +313,15 @@ golf_simulation_data/
 │   │   ├── fact_fricciones.csv        # Eventos granulares de fricción social
 │   │   ├── fact_ratings.csv           # 5 aspectos + categoría NPS
 │   │   ├── inventario_clubes.csv      # Snapshot mensual de ocupación
-│   │   └── gogolf_campos_reales.csv   # Datos scrapeados de gogolf.mx
+│   │   └── campos_reales.csv          # Datos scrapeados del sitio oficial
 │   │
 │   └── processed/
 │       └── kpi_bsc_mensual.csv        # KPIs BSC precalculados (24 periodos)
 │
 ├── src/
-│   ├── 00_scraper_gogolf.py           # Scraper Playwright para gogolf.mx
+│   ├── 00_scraper.py                  # Scraper Playwright (Chromium headless)
 │   ├── 01_generar_datos.py            # Generador del datamart sintético
-│   ├── 02_analisis_descriptivo.py     # Análisis + gráficas estáticas
-│   └── 03_generar_word.py             # Generador del reporte
+│   └── 02_analisis_descriptivo.py     # Análisis + gráficas estáticas
 │
 ├── dashboard/
 │   └── app.py                         # Dashboard Streamlit BSC (6 tabs)
@@ -194,32 +352,15 @@ python src/02_analisis_descriptivo.py
 
 ---
 
-## Diseño del Datamart — Esquema Estrella
-
-```
-dim_fecha ──┐
-dim_club  ──┤
-dim_campo ──┼──► fact_reservas ──► fact_cancelaciones
-dim_jugador─┘         │
-                       ├──► fact_noshow
-                       ├──► fact_ratings
-                       └──► fact_fricciones
-
-dim_club ──► inventario_clubes
-fact_reservas (agregado) ──► kpi_bsc_mensual  [data/processed]
-```
-
----
-
 ## Fuentes de Datos
 
 | Fuente | Uso |
 |---|---|
-| [gogolf.mx](https://gogolf.mx) (Playwright scraping) | 14 clubes con green fees reales y requisitos de entrada |
+| Sitio oficial de la plataforma (Playwright scraping) | 14 clubes con green fees reales y requisitos de entrada |
 | SMN / CONAGUA | Probabilidad de lluvia mensual por región (9 regiones) |
 | AMAI 2022 (Regla NSE) | Distribución socioeconómica: AB 12%, C+ 35%, C 38%, D+ 15% |
 | Benchmarks sector marketplace | Tasas de cancelación, NPS y recompra de referencia |
 
 ---
 
-*Proyecto MNA — Análisis Estratégico GoGolf 2023–2024*
+*Proyecto MNA — Análisis Estratégico de Plataforma de Reservas de Golf · México · 2023–2024*
