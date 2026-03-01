@@ -175,7 +175,16 @@ def apply_layout(fig, height=300, **kw):
     # Merge xaxis / yaxis defaults con lo que pase el caller
     xaxis = {**_XAXIS_DEF, **(kw.pop("xaxis", {}) or {})}
     yaxis = {**_YAXIS_DEF, **(kw.pop("yaxis", {}) or {})}
-    fig.update_layout(height=height, xaxis=xaxis, yaxis=yaxis, **PLOT_LAYOUT, **kw)
+    
+    layout_args = {}
+    layout_args.update(PLOT_LAYOUT)
+    for k, v in kw.items():
+        if isinstance(v, dict) and k in layout_args and isinstance(layout_args[k], dict):
+            layout_args[k] = {**layout_args[k], **v}
+        else:
+            layout_args[k] = v
+
+    fig.update_layout(height=height, xaxis=xaxis, yaxis=yaxis, **layout_args)
 
 # ═══════════════════════════════════════════════════════════════════════════
 # SIDEBAR – Filtros
