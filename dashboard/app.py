@@ -97,8 +97,7 @@ MESES_ES = {1:"Ene",2:"Feb",3:"Mar",4:"Abr",5:"May",6:"Jun",
 # SIDEBAR – Filtros
 # ═══════════════════════════════════════════════════════════════════════════
 with st.sidebar:
-    st.image("https://gogolf.mx/build/images/logo-light.svg",
-             use_container_width=True)
+    st.image("https://gogolf.mx/build/images/logo-light.svg", width=220)
     st.markdown("---")
     st.markdown("### Filtros")
 
