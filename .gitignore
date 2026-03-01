@@ -15,5 +15,14 @@ Thumbs.db
 data/raw/gogolf_raw.html
 data/raw/gogolf_screenshot.png
 
-# Graficas generadas (reproducibles con src/02_analisis_descriptivo.py)
+# Carpeta output/ completa (scripts legacy, graficas, CSVs, docs Word generados)
 output/
+
+# Carpeta legacy src/csv/ (datos en data/raw/ y data/processed/)
+src/csv/
+
+# Archivos de configuracion local
+.claude/
+
+# PDF original del equipo
+input/

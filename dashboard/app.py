@@ -128,13 +128,22 @@ def load_all():
     jugs    = pd.read_csv(os.path.join(DATA, "dim_jugador.csv"))
     inv     = pd.read_csv(os.path.join(DATA, "inventario_clubes.csv"))
 
+    MESES = {1:"Ene",2:"Feb",3:"Mar",4:"Abr",5:"May",6:"Jun",
+             7:"Jul",8:"Ago",9:"Sep",10:"Oct",11:"Nov",12:"Dic"}
     bsc["periodo"] = pd.to_datetime(
         bsc["anio"].astype(str) + "-" + bsc["mes"].astype(str).str.zfill(2)
+    )
+    # Etiqueta en español para eje X categórico (evita locale inglés de Plotly)
+    bsc["periodo_lbl"] = bsc.apply(
+        lambda r: f"{MESES[int(r['mes'])]} {int(r['anio'])}", axis=1
     )
     res["fecha_dt"]  = pd.to_datetime(res["id_fecha"], format="%Y%m%d")
     res["anio"]      = res["fecha_dt"].dt.year
     res["mes"]       = res["fecha_dt"].dt.month
     res["periodo"]   = res["fecha_dt"].dt.to_period("M").dt.to_timestamp()
+    res["periodo_lbl"] = res.apply(
+        lambda r: f"{MESES[int(r['mes'])]} {int(r['anio'])}", axis=1
+    )
 
     fricc = fricc.merge(clubs[["id_club","nombre_club"]], on="id_club", how="left")
     noshow= noshow.merge(clubs[["id_club","nombre_club"]], on="id_club", how="left")
@@ -151,6 +160,8 @@ MESES_ES = {1:"Ene",2:"Feb",3:"Mar",4:"Abr",5:"May",6:"Jun",
 PLOT_LAYOUT = dict(
     plot_bgcolor=BLANCO, paper_bgcolor=BLANCO,
     font=dict(family="Inter, sans-serif", color=GRIS_TEXT),
+    legend=dict(font=dict(color=GRIS_TEXT), bgcolor="rgba(255,255,255,0.85)",
+                bordercolor="#e0e0e0", borderwidth=1),
     margin=dict(t=20, b=30, l=10, r=10),
 )
 
@@ -270,7 +281,7 @@ with tab_resumen:
         sec("Reservas Mensuales y Tendencia")
         fig = go.Figure()
         fig.add_trace(go.Bar(
-            x=bsc_f["periodo"], y=bsc_f["total_reservas"],
+            x=bsc_f["periodo_lbl"], y=bsc_f["total_reservas"],
             marker_color=VERDE_P, opacity=0.85, name="Reservas",
         ))
         x_num = np.arange(len(bsc_f))
@@ -278,7 +289,7 @@ with tab_resumen:
             z = np.polyfit(x_num, bsc_f["total_reservas"], 1)
             p = np.poly1d(z)
             fig.add_trace(go.Scatter(
-                x=bsc_f["periodo"], y=p(x_num),
+                x=bsc_f["periodo_lbl"], y=p(x_num),
                 line=dict(color=NARANJA, dash="dash", width=2.5),
                 name="Tendencia"
             ))
@@ -323,20 +334,20 @@ with tab_resumen:
         ],
         vertical_spacing=0.18, horizontal_spacing=0.10,
     )
-    fig4.add_trace(go.Bar(x=bsc_f["periodo"],y=bsc_f["comision_total_gogolf_mxn"]/1e6,
+    fig4.add_trace(go.Bar(x=bsc_f["periodo_lbl"],y=bsc_f["comision_total_gogolf_mxn"]/1e6,
                           name="Comisión",marker_color=VERDE_P,opacity=0.85), row=1,col=1)
-    fig4.add_trace(go.Bar(x=bsc_f["periodo"],y=-bsc_f["costo_variable_total_mxn"]/1e6,
+    fig4.add_trace(go.Bar(x=bsc_f["periodo_lbl"],y=-bsc_f["costo_variable_total_mxn"]/1e6,
                           name="Costo Var.",marker_color=ROJO,opacity=0.75), row=1,col=1)
 
     nps_colors = [VERDE_P if v>=0 else ROJO for v in bsc_f["nps_proxy"]]
-    fig4.add_trace(go.Bar(x=bsc_f["periodo"],y=bsc_f["nps_proxy"],
+    fig4.add_trace(go.Bar(x=bsc_f["periodo_lbl"],y=bsc_f["nps_proxy"],
                           name="NPS",marker_color=nps_colors,showlegend=False), row=1,col=2)
     fig4.add_hline(y=0, line_dash="dot", line_color=GRIS_DARK, row=1, col=2)
 
-    fig4.add_trace(go.Scatter(x=bsc_f["periodo"],y=bsc_f["tasa_noshow_pct"],
+    fig4.add_trace(go.Scatter(x=bsc_f["periodo_lbl"],y=bsc_f["tasa_noshow_pct"],
                               name="No-show %",line=dict(color=ROJO,width=2),
                               mode="lines+markers"), row=2,col=1)
-    fig4.add_trace(go.Scatter(x=bsc_f["periodo"],
+    fig4.add_trace(go.Scatter(x=bsc_f["periodo_lbl"],
                               y=100-bsc_f["pct_cumplimiento_horario"],
                               name="Incumplimiento %",line=dict(color=NARANJA,width=2),
                               mode="lines+markers"), row=2,col=1)
@@ -358,12 +369,14 @@ with tab_resumen:
     ), row=2,col=2)
     fig4.update_layout(
         height=560, showlegend=True,
-        legend=dict(orientation="h", y=-0.05),
+        legend=dict(orientation="h", y=-0.05, font=dict(color=GRIS_TEXT)),
         plot_bgcolor=BLANCO, paper_bgcolor=BLANCO,
         font=dict(family="Inter, sans-serif", color=GRIS_TEXT),
         margin=dict(t=50,b=30,l=10,r=10),
         barmode="relative",
     )
+    fig4.update_xaxes(tickfont=_FONT_AXIS, title_font=_FONT_AXIS)
+    fig4.update_yaxes(tickfont=_FONT_AXIS, title_font=_FONT_AXIS)
     st.plotly_chart(fig4, use_container_width=True)
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -386,7 +399,7 @@ with tab_fin:
     c_left, c_right = st.columns(2)
     with c_left:
         sec("Ingreso Promedio por Reserva (Mensual)")
-        fig = px.line(bsc_f, x="periodo", y="ingreso_promedio_por_reserva",
+        fig = px.line(bsc_f, x="periodo_lbl", y="ingreso_promedio_por_reserva",
                       markers=True, color_discrete_sequence=[VERDE_P])
         fig.add_hline(y=bsc_f["ingreso_promedio_por_reserva"].mean(),
                       line_dash="dash", line_color=NARANJA,
@@ -399,7 +412,7 @@ with tab_fin:
 
     with c_right:
         sec("Margen por Transacción (Mensual)")
-        fig = px.bar(bsc_f, x="periodo",
+        fig = px.bar(bsc_f, x="periodo_lbl",
                      y=bsc_f["margen_promedio_por_transaccion"]*100,
                      color_discrete_sequence=[VERDE_P])
         fig.add_hline(y=bsc_f["margen_promedio_por_transaccion"].mean()*100,
@@ -466,7 +479,7 @@ with tab_cliente:
     with c_left:
         sec("NPS Proxy Mensual")
         nps_colors = [VERDE_P if v>=0 else ROJO for v in bsc_f["nps_proxy"]]
-        fig = go.Figure(go.Bar(x=bsc_f["periodo"], y=bsc_f["nps_proxy"],
+        fig = go.Figure(go.Bar(x=bsc_f["periodo_lbl"], y=bsc_f["nps_proxy"],
                                marker_color=nps_colors))
         fig.add_hline(y=0,  line_dash="dot",  line_color=GRIS_DARK)
         fig.add_hline(y=10, line_dash="dash", line_color=VERDE_P,
@@ -476,7 +489,7 @@ with tab_cliente:
 
     with c_right:
         sec("Tasa de Recompra Mensual")
-        fig = px.line(bsc_f, x="periodo", y="tasa_recompra_pct",
+        fig = px.line(bsc_f, x="periodo_lbl", y="tasa_recompra_pct",
                       markers=True, color_discrete_sequence=[VERDE_P])
         fig.add_hline(y=recompra+10, line_dash="dash", line_color=NARANJA,
                       annotation_text="Meta 12m")
@@ -526,25 +539,29 @@ with tab_cliente:
     sec("Usuarios Activos y Recompra")
     fig = make_subplots(specs=[[{"secondary_y": True}]])
     fig.add_trace(
-        go.Scatter(x=bsc_f["periodo"], y=bsc_f["total_usuarios_activos_mes"],
+        go.Scatter(x=bsc_f["periodo_lbl"], y=bsc_f["total_usuarios_activos_mes"],
                    fill="tozeroy",
                    fillcolor=f"rgba(26,138,60,0.12)",
                    line=dict(color=VERDE_P,width=2.5), name="Usuarios activos"),
         secondary_y=False
     )
     fig.add_trace(
-        go.Scatter(x=bsc_f["periodo"], y=bsc_f["tasa_recompra_pct"],
+        go.Scatter(x=bsc_f["periodo_lbl"], y=bsc_f["tasa_recompra_pct"],
                    line=dict(color=NARANJA,width=2,dash="dot"),
                    name="Recompra %", mode="lines+markers"),
         secondary_y=True
     )
     fig.update_layout(height=300, plot_bgcolor=BLANCO, paper_bgcolor=BLANCO,
                       font=dict(family="Inter, sans-serif", color=GRIS_TEXT),
-                      margin=dict(t=10,b=10), legend=dict(orientation="h",y=1.1))
+                      margin=dict(t=10,b=10),
+                      legend=dict(orientation="h", y=1.1,
+                                  font=dict(color=GRIS_TEXT)))
     fig.update_yaxes(title_text="Usuarios activos", secondary_y=False,
-                     showgrid=True, gridcolor="#e8ede8")
+                     showgrid=True, gridcolor="#e8ede8",
+                     tickfont=_FONT_AXIS, title_font=_FONT_AXIS)
     fig.update_yaxes(title_text="Tasa de recompra (%)", secondary_y=True,
-                     showgrid=False)
+                     showgrid=False,
+                     tickfont=_FONT_AXIS, title_font=_FONT_AXIS)
     st.plotly_chart(fig, use_container_width=True)
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -570,7 +587,7 @@ with tab_procesos:
     c_l, c_r = st.columns(2)
     with c_l:
         sec("Tasa de No-Show Mensual")
-        fig = px.line(bsc_f, x="periodo", y="tasa_noshow_pct",
+        fig = px.line(bsc_f, x="periodo_lbl", y="tasa_noshow_pct",
                       markers=True, color_discrete_sequence=[ROJO])
         fig.add_hline(y=ns_p-3, line_dash="dash", line_color=VERDE_P,
                       annotation_text="Meta 6m")
@@ -579,7 +596,7 @@ with tab_procesos:
 
     with c_r:
         sec("% Discrepancia de Inventario")
-        fig = px.bar(bsc_f, x="periodo", y="pct_discrepancia_inventario",
+        fig = px.bar(bsc_f, x="periodo_lbl", y="pct_discrepancia_inventario",
                      color_discrete_sequence=[NARANJA])
         fig.add_hline(y=disc*0.5, line_dash="dash", line_color=VERDE_P,
                       annotation_text="Meta 12m")
@@ -711,7 +728,7 @@ with tab_friccion:
     st.plotly_chart(fig, use_container_width=True)
 
     sec("Fricción Social Mensual")
-    fig = px.line(bsc_f, x="periodo", y="pct_friccion_social",
+    fig = px.line(bsc_f, x="periodo_lbl", y="pct_friccion_social",
                   markers=True, color_discrete_sequence=[ROJO])
     fig.add_hline(y=bsc_f["pct_friccion_social"].mean()*0.85,
                   line_dash="dash", line_color=VERDE_P,

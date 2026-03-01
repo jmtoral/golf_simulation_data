@@ -583,18 +583,55 @@ ASPECTOS = ["experiencia_general","condicion_campo","servicio_club",
             "facilidad_reserva","relacion_precio_valor"]
 
 fact_ratings = []
-for rid, jug_id, id_club, nse in rids_rating:
-    # NSE bajo tiende a rating mas extremo (muy satisfecho por acceso O muy frustrado)
-    if nse in ("C","Dmas"):
-        weights_r = [0.08,0.10,0.15,0.32,0.35]  # ligeramente mas disperso
-    else:
-        weights_r = [0.02,0.05,0.12,0.42,0.39]
-    ratings = {a: random.choices([1,2,3,4,5],weights_r)[0] for a in ASPECTOS}
-    promedio = round(sum(ratings.values())/len(ratings),2)
+# Variabilidad mensual del NPS: algunos meses buenos, algunos malos
+# Semilla ya fija arriba, esto produce resultados reproducibles
+_nps_mes_mod = {}
+for _y in [2023, 2024]:
+    for _m in range(1, 13):
+        # Modificador mensual: ciclo con picos en temporada alta (may-ago, dic)
+        if _m in (5, 6, 7, 8, 12):   _nps_mes_mod[(_y, _m)] = +0.30   # buen mes
+        elif _m in (1, 3, 4, 10):    _nps_mes_mod[(_y, _m)] = +0.10   # mes normal
+        else:                        _nps_mes_mod[(_y, _m)] = -0.05   # mes bajo
 
-    # NPS proxy: 5->promotor, 4->neutro, <=3->detractor
-    if promedio >= 4.5:   nps_cat = "promotor"
-    elif promedio >= 3.5: nps_cat = "neutro"
+for rid, jug_id, id_club, nse in rids_rating:
+    # Extraer mes de la reserva para aplicar modificador estacional
+    fid = next((r["id_fecha"] for r in fact_reservas if r["id_reserva"] == rid), None)
+    mes_mod = 0.0
+    if fid:
+        _k = (int(fid[:4]), int(fid[4:6]))
+        mes_mod = _nps_mes_mod.get(_k, 0.0)
+
+    # Pesos base por NSE — media global ~3.65 → NPS oscila entre -12 y +12
+    # Escala [1, 2, 3, 4, 5]
+    if nse == "AB":
+        weights_r = [0.03, 0.06, 0.18, 0.42, 0.31]   # media ~3.92 → buen NPS en picos
+    elif nse == "Cmas":
+        weights_r = [0.05, 0.09, 0.22, 0.40, 0.24]   # media ~3.69
+    elif nse == "C":
+        weights_r = [0.08, 0.12, 0.24, 0.36, 0.20]   # media ~3.48, fricción visible
+    else:  # Dmas
+        weights_r = [0.11, 0.15, 0.25, 0.32, 0.17]   # media ~3.29, mayor frustración
+
+    # Aplicar modificador mensual: desplazar pesos hacia 5 (buen mes) o 1 (mal mes)
+    w = list(weights_r)
+    if mes_mod > 0:
+        shift = mes_mod * 0.10
+        w = [max(0, w[i] - shift/4) for i in range(4)] + [w[4] + shift]
+    elif mes_mod < 0:
+        shift = abs(mes_mod) * 0.10
+        w = [w[0] + shift] + [max(0, w[i] - shift/4) for i in range(1, 5)]
+    total_w = sum(w)
+    w = [v / total_w for v in w]
+
+    ratings_asp = {a: random.choices([1,2,3,4,5], w)[0] for a in ASPECTOS}
+    promedio = round(sum(ratings_asp.values()) / len(ratings_asp), 2)
+
+    # NPS: umbrales calibrados para rango realista -15 a +15 con variabilidad mensual
+    # Promotor (NPS 9-10): promedio >= 4.1  → ~35-45% de ratings
+    # Neutro   (NPS 7-8):  4.1 > promedio >= 3.4
+    # Detractor (NPS 0-6): promedio < 3.4   → ~15-25% de ratings
+    if promedio >= 4.1:   nps_cat = "promotor"
+    elif promedio >= 3.4: nps_cat = "neutro"
     else:                 nps_cat = "detractor"
 
     fact_ratings.append({
@@ -602,7 +639,7 @@ for rid, jug_id, id_club, nse in rids_rating:
         "id_reserva":             rid,
         "id_club":                id_club,
         "nse_jugador":            nse,
-        **ratings,
+        **ratings_asp,
         "rating_promedio":        promedio,
         "nps_categoria":          nps_cat,
         "tiene_comentario":       random.choices(["SI","NO"],[0.35,0.65])[0],

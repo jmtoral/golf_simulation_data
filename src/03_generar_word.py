@@ -1,5 +1,5 @@
 """
-GoGolf - Generador de documento Word
+Plataforma de Reservas de Golf - Generador de documento Word
 Secciones: Metas SMART + Recoleccion/Limpieza/Validacion + Analisis Descriptivo
 """
 
@@ -12,21 +12,37 @@ from docx.oxml import OxmlElement
 import os, csv, statistics
 from collections import defaultdict
 
-BASE = os.path.dirname(__file__)
-CSV  = os.path.join(BASE, "csv")
-FIGS = os.path.join(BASE, "graficas")
+# BASE = raíz del repositorio (un nivel arriba de output/)
+BASE = os.path.dirname(os.path.dirname(__file__))
+CSV_RAW  = os.path.join(BASE, "data", "raw")
+CSV_PROC = os.path.join(BASE, "data", "processed")
+FIGS     = os.path.join(BASE, "output", "graficas")
 
 def load(fname):
-    with open(os.path.join(CSV, fname), encoding="utf-8") as f:
+    path = os.path.join(CSV_RAW, fname)
+    with open(path, encoding="utf-8") as f:
+        return list(csv.DictReader(f))
+
+def load_proc(fname):
+    path = os.path.join(CSV_PROC, fname)
+    with open(path, encoding="utf-8") as f:
         return list(csv.DictReader(f))
 
 # Cargar KPIs reales
-bsc    = load("kpi_bsc_mensual.csv")
+bsc    = load_proc("kpi_bsc_mensual.csv")
 res    = load("fact_reservas.csv")
-noshow = load("fact_noshow.csv")
 rats   = load("fact_ratings.csv")
-fric   = load("fact_fricciones.csv")
 clubs  = load("dim_club.csv")
+
+def load_safe(fname):
+    """Carga un CSV si existe; devuelve lista vacía si no."""
+    try:
+        return load(fname)
+    except FileNotFoundError:
+        return []
+
+noshow = load_safe("fact_noshow.csv")
+fric   = load_safe("fact_fricciones.csv")
 
 def col(table, c): return [float(r[c]) for r in table if r.get(c,'')]
 
@@ -41,19 +57,34 @@ DISC       = round(statistics.mean(col(bsc,"pct_discrepancia_inventario")),2)
 FRIC       = round(statistics.mean(col(bsc,"pct_friccion_social")),1)
 MARGEN     = round(statistics.mean(col(bsc,"margen_promedio_por_transaccion"))*100,1)
 ING_PROM   = round(statistics.mean(col(bsc,"ingreso_promedio_por_reserva")))
-PERDIDA    = round(sum(float(r["perdida_total_estimada_mxn"]) for r in noshow)/1e6, 1)
 TOT_RES    = len(res)
+
+if noshow:
+    PERDIDA = round(sum(float(r["perdida_total_estimada_mxn"]) for r in noshow)/1e6, 1)
+else:
+    PERDIDA = round(sum(float(r.get("perdida_estimada_noshow_mxn",0)) for r in res)/1e6, 1)
+
 nse_cnt    = defaultdict(int)
 for r in res: nse_cnt[r["nse_jugador"]] += 1
 tot = sum(nse_cnt.values())
 PCT_NSE_BAJO = round((nse_cnt["C"]+nse_cnt["Dmas"])/tot*100)
 
+# NPS percentiles para tabla de parámetros
+nps_vals = sorted(col(bsc,"nps_proxy"))
+n = len(nps_vals)
+nps_med  = round(statistics.median(nps_vals),1)
+nps_std  = round(statistics.stdev(nps_vals),1)
+nps_min  = round(nps_vals[0],1)
+nps_max  = round(nps_vals[-1],1)
+nps_p25  = round(nps_vals[n//4],1)
+nps_p75  = round(nps_vals[3*n//4],1)
+
 # ── Helpers de formato ────────────────────────────────────────────────────────
-AZUL_OSC  = RGBColor(0x1F, 0x4E, 0x79)
-AZUL_MED  = RGBColor(0x2E, 0x75, 0xB6)
+VERDE_OSC = RGBColor(0x0F, 0x5C, 0x28)
+VERDE_MED = RGBColor(0x1A, 0x8A, 0x3C)
 GRIS_FONDO= RGBColor(0xF2, 0xF2, 0xF2)
-NARANJA   = RGBColor(0xED, 0x7D, 0x31)
-VERDE     = RGBColor(0x70, 0xAD, 0x47)
+NARANJA   = RGBColor(0xF5, 0x82, 0x0D)
+VERDE_CLR = RGBColor(0x70, 0xAD, 0x47)
 ROJO      = RGBColor(0xC0, 0x00, 0x00)
 
 def set_cell_bg(cell, hex_color):
@@ -221,7 +252,7 @@ def tabla_metas(doc):
     hdr = t.rows[0]
     for i,(h,w) in enumerate(zip(headers,[2.5,3.5,4.5,2.0,2.0,2.0,2.0])):
         c = hdr.cells[i]
-        set_cell_bg(c,"1F4E79")
+        set_cell_bg(c,"0F5C28")
         c.width = Cm(w)
         p2 = c.paragraphs[0]
         p2.alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -231,12 +262,11 @@ def tabla_metas(doc):
 
     # Filas de datos
     perspectiva_color = {
-        "Financiera":           "D6E4F0",
+        "Financiera":           "D6EAD6",
         "Cliente":              "E2F0D9",
         "Procesos\nInternos":   "FFF2CC",
         "Aprendizaje\ny Crecimiento":"F8CBAD",
     }
-    prev_persp = None
     for i, fila in enumerate(filas):
         row = t.rows[i+1]
         persp, inic, kpi, base, m6, m12, m24 = fila
@@ -273,10 +303,10 @@ style.font.size = Pt(11)
 # BLOQUE A — METAS Y OBJETIVOS ESTRATEGICOS
 # ════════════════════════════════════════════════════════════════════════════
 h = doc.add_heading("3. METAS Y OBJETIVOS ESTRATÉGICOS", level=1)
-h.runs[0].font.color.rgb = AZUL_OSC
+h.runs[0].font.color.rgb = VERDE_OSC
 
 body(doc,
-    "Las metas estratégicas de GoGolf se estructuran bajo el principio SMART, asegurando "
+    "Las metas estratégicas de la plataforma se estructuran bajo el principio SMART, asegurando "
     "que cada indicador del Balanced Scorecard (BSC) tenga un objetivo cuantificable, "
     "alcanzable y temporalmente definido. Los valores de referencia (baseline) provienen "
     "del análisis descriptivo de los datos del período 2023–2024, sintetizados en el "
@@ -289,12 +319,12 @@ body(doc,
     f"(~8–10%)—, un **NPS proxy negativo de {NPS}** que refleja experiencias mixtas entre "
     f"usuarios de nivel socioeconómico medio-bajo, y una **tasa de fricción social del "
     f"{FRIC}%** causada por la brecha entre los requisitos de entrada de los clubes y el "
-    f"perfil del jugador típico de GoGolf —donde el {PCT_NSE_BAJO}% pertenece a los "
+    f"perfil del jugador típico —donde el {PCT_NSE_BAJO}% pertenece a los "
     f"segmentos NSE C y D+.",
     bold_parts=True
 )
 
-doc.add_heading("3.1 Horizontes Estratégicos", level=2).runs[0].font.color.rgb = AZUL_MED
+doc.add_heading("3.1 Horizontes Estratégicos", level=2).runs[0].font.color.rgb = VERDE_MED
 
 body(doc,
     "Se establecen tres horizontes estratégicos, alineados con la lógica causa–efecto "
@@ -322,11 +352,11 @@ for horizonte, titulo, desc in [
     r1 = p.add_run(horizonte + " ")
     r1.bold = True; r1.font.size = Pt(11)
     r2 = p.add_run(titulo + " ")
-    r2.bold = True; r2.font.size = Pt(11); r2.font.color.rgb = AZUL_MED
+    r2.bold = True; r2.font.size = Pt(11); r2.font.color.rgb = VERDE_MED
     r3 = p.add_run(desc)
     r3.font.size = Pt(10.5)
 
-doc.add_heading("3.2 Definición de Metas SMART por KPI", level=2).runs[0].font.color.rgb = AZUL_MED
+doc.add_heading("3.2 Definición de Metas SMART por KPI", level=2).runs[0].font.color.rgb = VERDE_MED
 
 body(doc,
     "A continuación se definen las metas por perspectiva del BSC, con base en los valores "
@@ -335,7 +365,7 @@ body(doc,
 )
 
 # -- Financiera --
-doc.add_heading("Perspectiva Financiera", level=3).runs[0].font.color.rgb = AZUL_MED
+doc.add_heading("Perspectiva Financiera", level=3).runs[0].font.color.rgb = VERDE_MED
 body(doc,
     f"El ingreso promedio por reserva se ubica en **${ING_PROM:,} MXN** con un margen "
     f"promedio por transacción de **{MARGEN}%**. La tasa de cancelación actual es de "
@@ -356,7 +386,7 @@ add_kpi_line(doc,"Tasa de cancelación",f"{TASA_CAN}%",
              "politicas de deposito y recordatorios automaticos")
 
 # -- Cliente --
-doc.add_heading("Perspectiva de Cliente", level=3).runs[0].font.color.rgb = AZUL_MED
+doc.add_heading("Perspectiva de Cliente", level=3).runs[0].font.color.rgb = VERDE_MED
 body(doc,
     f"El NPS proxy calculado a partir de ratings es de **{NPS}**, indicando que existen "
     f"más detractores que promotores en la base actual —resultado consistente con la "
@@ -375,13 +405,13 @@ add_kpi_line(doc,"Rating promedio",f"{RATING}/5.0",">4.0",">4.2",">4.5",
              "estandar minimo de calidad para clubes afiliados")
 
 # -- Procesos --
-doc.add_heading("Perspectiva de Procesos Internos", level=3).runs[0].font.color.rgb = AZUL_MED
+doc.add_heading("Perspectiva de Procesos Internos", level=3).runs[0].font.color.rgb = VERDE_MED
 body(doc,
     f"El cumplimiento de horario actual es de **{CUMPL}%**, con un **{DISC}%** de "
     f"discrepancias entre el inventario digital y la disponibilidad real de los clubes. "
     f"La tasa de no-show de **{TASA_NS}%** es la métrica de mayor impacto operativo: "
     f"cada no-show representa un slot irrecuperable para el club y la pérdida de la "
-    f"comisión de GoGolf. El análisis de causas muestra que la **fricción social es el "
+    f"comisión de la plataforma. El análisis de causas muestra que la **fricción social es el "
     f"principal driver**, superando incluso al clima adverso.",
     bold_parts=True
 )
@@ -395,12 +425,12 @@ add_kpi_line(doc,"Tasa de no-shows",f"{TASA_NS}%",
              "deposito obligatorio + filtro de requisitos pre-reserva")
 
 # -- Aprendizaje --
-doc.add_heading("Perspectiva de Aprendizaje y Crecimiento", level=3).runs[0].font.color.rgb = AZUL_MED
+doc.add_heading("Perspectiva de Aprendizaje y Crecimiento", level=3).runs[0].font.color.rgb = VERDE_MED
 body(doc,
     f"El indicador más revelador de esta perspectiva es el **{FRIC}% de reservas con "
     f"fricción social**, concentrado en jugadores NSE C y D+ que acceden a clubes con "
     f"requisitos de dress code estricto, handicap máximo o equipo propio obligatorio. "
-    f"Esta brecha entre la promesa de democratización del golf de GoGolf y la realidad "
+    f"Esta brecha entre la promesa de democratización del golf de la plataforma y la realidad "
     f"de los clubes afiliados es el problema central a resolver mediante capacidades "
     f"organizacionales (datos, algoritmos de matching, acuerdos con clubes).",
     bold_parts=True
@@ -413,7 +443,7 @@ add_kpi_line(doc,"% Decisiones con análisis formal","Est. 30%",">50%",">70%",">
 add_kpi_line(doc,"Tiempo de implementación de mejoras","Est. 45 dias","<35","<25","<15",
              "metodologia agil por sprints quincenales")
 
-doc.add_heading("3.3 Tablero Consolidado de Metas", level=2).runs[0].font.color.rgb = AZUL_MED
+doc.add_heading("3.3 Tablero Consolidado de Metas", level=2).runs[0].font.color.rgb = VERDE_MED
 body(doc,
     "La siguiente tabla sintetiza el sistema completo de metas SMART por perspectiva, "
     "KPI e iniciativa estratégica, permitiendo el seguimiento integrado del BSC:"
@@ -427,50 +457,61 @@ doc.add_paragraph()
 # ════════════════════════════════════════════════════════════════════════════
 doc.add_page_break()
 h = doc.add_heading("4. RECOLECCIÓN, LIMPIEZA Y VALIDACIÓN DE DATOS", level=1)
-h.runs[0].font.color.rgb = AZUL_OSC
+h.runs[0].font.color.rgb = VERDE_OSC
 
 body(doc,
-    "Dado que GoGolf es una empresa en etapa temprana sin historial transaccional disponible "
+    "Dado que el cliente es una empresa en etapa temprana sin historial transaccional disponible "
     "para análisis externo, se construyó un datamart sintético que replica fielmente la "
     "estructura, distribuciones y lógica de negocio esperada para la plataforma. Los datos "
     "fueron generados con parámetros basados en fuentes verificables: los 14 campos y sus "
-    "green fees provienen directamente de gogolf.mx, las probabilidades de lluvia por región "
-    "corresponden a datos históricos del Servicio Meteorológico Nacional (SMN/CONAGUA), y "
-    "la distribución socioeconómica de la base de usuarios sigue la clasificación NSE de "
+    "green fees provienen directamente de la plataforma en línea, las probabilidades de lluvia "
+    "por región corresponden a datos históricos del Servicio Meteorológico Nacional (SMN/CONAGUA), "
+    "y la distribución socioeconómica de la base de usuarios sigue la clasificación NSE de "
     "la AMAI 2022."
 )
 
-doc.add_heading("4.1 Fuentes de Datos", level=2).runs[0].font.color.rgb = AZUL_MED
+doc.add_heading("4.1 Fuentes de Datos", level=2).runs[0].font.color.rgb = VERDE_MED
 
 body(doc,
-    "El datamart de GoGolf integra cuatro fuentes primarias, estructuradas en un modelo "
+    "El datamart integra cuatro fuentes primarias, estructuradas en un modelo "
     "dimensional (esquema estrella) con tablas de hechos y dimensiones:"
 )
+
+# Cargar tablas adicionales para conteos
+canc = load_safe("fact_cancelaciones.csv")
+inv  = load_safe("inventario_clubes.csv")
+
+n_canc = len(canc)
+n_rats = len(rats)
+n_inv  = len(inv)
+
+pct_req = 0
+if canc:
+    pct_req = round(sum(1 for r in canc if r.get('motivo_cancelacion','')=='requisito_no_cumplido') / n_canc * 100)
 
 fuentes = [
     ("Datos transaccionales de reservas",
      f"Tabla fact_reservas con {TOT_RES:,} registros del período enero 2023–diciembre 2024. "
      f"Incluye identificador de reserva, fecha, club, jugador, tipo de campo, horario de tee "
      f"time, número de jugadores en el grupo, green fee unitario, ingreso total, comisión de "
-     f"GoGolf, canal de reserva, estatus (confirmada, cancelada, no-show, completada), "
+     f"la plataforma, canal de reserva, estatus (confirmada, cancelada, no-show, completada), "
      f"indicadores de lluvia, fricción social y cumplimiento de horario. Los precios reflejan "
      f"la tarifa diferenciada real entre días de semana y fin de semana de cada club."),
     ("Historial de cancelaciones",
-     f"Tabla fact_cancelaciones con {len(load('fact_cancelaciones.csv')):,} eventos. "
+     f"Tabla fact_cancelaciones con {n_canc:,} eventos. "
      f"Registra el motivo de cancelación, el tipo (anticipada >48h, 24–48h, last-minute <24h), "
      f"las horas de anticipación al tee time, el porcentaje de reembolso aplicado y si la "
-     f"cancelación estuvo vinculada a fricción social. El motivo 'requisito no cumplido' —"
-     f"ausente en plataformas tradicionales de reserva— es específico del modelo GoGolf y "
-     f"representa el {round(sum(1 for r in load('fact_cancelaciones.csv') if r['motivo_cancelacion']=='requisito_no_cumplido')/len(load('fact_cancelaciones.csv'))*100)}% de las cancelaciones."),
+     f"cancelación estuvo vinculada a fricción social. El motivo 'requisito no cumplido' "
+     f"—ausente en plataformas tradicionales de reserva— representa el {pct_req}% de las cancelaciones."),
     ("Ratings de usuarios",
-     f"Tabla fact_ratings con {len(load('fact_ratings.csv')):,} evaluaciones, "
+     f"Tabla fact_ratings con {n_rats:,} evaluaciones, "
      f"correspondientes al 38% de las reservas confirmadas o completadas (tasa de respuesta "
      f"conservadora para una plataforma nueva). Cada registro captura cinco dimensiones de "
      f"calidad —experiencia general, condición del campo, servicio del club, facilidad de "
      f"reserva y relación precio-valor— más una categorización NPS proxy (promotor, neutro, "
      f"detractor) derivada del rating promedio."),
     ("Inventario de clubes",
-     f"Tabla inventario_clubes con {len(load('inventario_clubes.csv')):,} snapshots mensuales "
+     f"Tabla inventario_clubes con {n_inv:,} snapshots mensuales "
      f"(un registro por club por mes). Registra la capacidad disponible, los slots reservados, "
      f"la tasa de ocupación y el porcentaje de discrepancia entre el inventario digital "
      f"y la disponibilidad real. Las discrepancias oscilan entre 1% y 8%, generando "
@@ -492,7 +533,7 @@ body(doc,
     "permitiendo el análisis de causa raíz por tipo de requisito y por club."
 )
 
-doc.add_heading("4.2 Proceso de Limpieza", level=2).runs[0].font.color.rgb = AZUL_MED
+doc.add_heading("4.2 Proceso de Limpieza", level=2).runs[0].font.color.rgb = VERDE_MED
 
 body(doc,
     "El proceso de limpieza se ejecutó sobre el datamart sintético siguiendo los estándares "
@@ -529,17 +570,19 @@ for titulo, desc in limpiezas:
     r2 = p.add_run(desc)
     r2.font.size = Pt(10.5)
 
-doc.add_heading("4.3 Validación", level=2).runs[0].font.color.rgb = AZUL_MED
+doc.add_heading("4.3 Validación", level=2).runs[0].font.color.rgb = VERDE_MED
 
 body(doc,
     "El proceso de validación cruzada garantiza la integridad referencial y la "
     "consistencia lógica del datamart:"
 )
 
+n_completadas = sum(1 for r in res if r['estatus_reserva'] in ('completada','confirmada'))
+
 validaciones = [
     ("Cruces entre reservas confirmadas y jugadas",
-     "Se verificó que todas las reservas con estatus 'completada' o 'confirmada' "
-     f"({sum(1 for r in res if r['estatus_reserva'] in ('completada','confirmada')):,} registros) "
+     f"Se verificó que todas las reservas con estatus 'completada' o 'confirmada' "
+     f"({n_completadas:,} registros) "
      "tengan un id_club y un id_jugador válidos presentes en las dimensiones correspondientes. "
      "Las reservas elegibles para rating (38%) se seleccionaron exclusivamente de este universo."),
     ("Identificación de outliers en cancelaciones anómalas",
@@ -553,7 +596,7 @@ validaciones = [
      "id_tipo_campo) tiene su correspondiente registro en la dimensión respectiva. "
      "Se confirmó que los días de cierre de cada club (e.g., lunes para la mayoría de "
      "los campos semi-privados) no generan reservas en fact_reservas —validación "
-     "específica del modelo de negocio GoGolf."),
+     "específica del modelo de negocio de la plataforma."),
 ]
 
 for titulo, desc in validaciones:
@@ -568,7 +611,7 @@ for titulo, desc in validaciones:
 # ════════════════════════════════════════════════════════════════════════════
 doc.add_page_break()
 h = doc.add_heading("5. ANÁLISIS DESCRIPTIVO", level=1)
-h.runs[0].font.color.rgb = AZUL_OSC
+h.runs[0].font.color.rgb = VERDE_OSC
 
 body(doc,
     "El análisis descriptivo se estructuró en torno a los cinco indicadores operativos "
@@ -578,7 +621,7 @@ body(doc,
 )
 
 # Tabla de parametros
-doc.add_heading("5.0 Parámetros Estadísticos Globales", level=2).runs[0].font.color.rgb = AZUL_MED
+doc.add_heading("5.0 Parámetros Estadísticos Globales", level=2).runs[0].font.color.rgb = VERDE_MED
 
 body(doc,"La siguiente tabla resume los parámetros descriptivos de las principales variables cuantitativas:")
 
@@ -589,11 +632,11 @@ params = [
     (f"Tasa cancelación (%)","24",f"{TASA_CAN}",f"{round(TASA_CAN-0.5,1)}","2.2","17.3","19.8","22.6","25.8"),
     (f"Tasa no-show (%)","24",f"{TASA_NS}","16.6","1.6","13.4","15.3","17.1","19.4"),
     ("Rating promedio (1-5)",f"{len(rats):,}",f"{RATING}","4.00","0.53","1.80","3.60","4.20","5.00"),
-    ("NPS proxy","24",f"{NPS}","-7.2","4.1","-14.9","-10.3","-4.5","-0.7"),
+    ("NPS proxy","24",f"{NPS}",f"{nps_med}",f"{nps_std}",f"{nps_min}",f"{nps_p25}",f"{nps_p75}",f"{nps_max}"),
     (f"Tasa de recompra (%)","24",f"{RECOMPRA}","56.9","10.2","38.2","49.0","64.5","77.8"),
     ("Margen por transacción (%)","24",f"{MARGEN}","87","32","-361","72","89","98"),
     (f"% Fricción social","24",f"{FRIC}","58.1","2.1","54.1","56.8","59.4","63.6"),
-    ("Pérdida por no-show (MXN)",f"{len(noshow):,}","$5,529","$4,230","$4,543","$153","$2,100","$7,800","$21,957"),
+    ("Pérdida por no-show (MXN)",f"{TOT_RES:,}","$5,529","$4,230","$4,543","$153","$2,100","$7,800","$21,957"),
 ]
 
 t2 = doc.add_table(rows=len(params), cols=9)
@@ -603,7 +646,7 @@ for i, row_data in enumerate(params):
     for j, val in enumerate(row_data):
         cell = t2.rows[i].cells[j]
         if i == 0:
-            set_cell_bg(cell,"1F4E79")
+            set_cell_bg(cell,"0F5C28")
             run = cell.paragraphs[0].add_run(val)
             run.bold = True; run.font.size = Pt(8)
             run.font.color.rgb = RGBColor(0xFF,0xFF,0xFF)
@@ -617,9 +660,8 @@ for i, row_data in enumerate(params):
 doc.add_paragraph()
 
 # 5.1 Promedio de reservas por mes
-doc.add_heading("5.1 Promedio de Reservas por Mes", level=2).runs[0].font.color.rgb = AZUL_MED
+doc.add_heading("5.1 Promedio de Reservas por Mes", level=2).runs[0].font.color.rgb = VERDE_MED
 
-# Insertar grafica
 img_path = os.path.join(FIGS,"05a_series_reservas.png")
 if os.path.exists(img_path):
     doc.add_picture(img_path, width=Inches(6.0))
@@ -636,13 +678,13 @@ body(doc,
 body(doc,
     "La tendencia lineal muestra una tasa de crecimiento sostenida, consistente con el "
     "patrón típico de una plataforma marketplace en sus primeros dos años de operación. "
-    "Sin embargo, la varianza mensual es alta (CV = 69%), lo que sugiere que GoGolf "
+    "Sin embargo, la varianza mensual es alta (CV = 69%), lo que sugiere que la plataforma "
     "depende significativamente de temporadas específicas —riesgo que debe mitigarse "
     "mediante estrategias de demanda en temporada baja (promociones, alianzas corporativas)."
 )
 
 # 5.2 Distribucion de green fees
-doc.add_heading("5.2 Distribución de Green Fees", level=2).runs[0].font.color.rgb = AZUL_MED
+doc.add_heading("5.2 Distribución de Green Fees", level=2).runs[0].font.color.rgb = VERDE_MED
 
 img_path = os.path.join(FIGS,"01c_boxplot_greenfee_por_club.png")
 if os.path.exists(img_path):
@@ -666,7 +708,7 @@ body(doc,
 )
 
 # 5.3 Tasa de cancelacion
-doc.add_heading("5.3 Tasa de Cancelación", level=2).runs[0].font.color.rgb = AZUL_MED
+doc.add_heading("5.3 Tasa de Cancelación", level=2).runs[0].font.color.rgb = VERDE_MED
 
 img_path = os.path.join(FIGS,"01b_ingreso_prom_cancelacion.png")
 if os.path.exists(img_path):
@@ -688,11 +730,11 @@ body(doc,
 )
 
 # 5.4 Participacion por tipo de campo
-doc.add_heading("5.4 Participación por Tipo de Campo", level=2).runs[0].font.color.rgb = AZUL_MED
+doc.add_heading("5.4 Participación por Tipo de Campo", level=2).runs[0].font.color.rgb = VERDE_MED
 
 body(doc,
     "El 65% de las reservas corresponde a campos de 18 hoyos estándar, el 25% a campos "
-    "de 9 hoyos (concentrados en los tres clubes reales de GoGolf con esa configuración: "
+    "de 9 hoyos (concentrados en los tres clubes reales de la plataforma con esa configuración: "
     "Coatzacoalcos, Soltepec y Santa Gertrudis), y el 10% restante a experiencias de "
     "práctica (Pitch & Putt y Driving Range). Esta distribución tiene implicaciones "
     "de ingreso: los campos de 9 hoyos generan 45% menos ingreso por reserva, por lo "
@@ -701,7 +743,7 @@ body(doc,
 )
 
 # 5.5 Evolucion de recurrencia
-doc.add_heading("5.5 Evolución de Recurrencia", level=2).runs[0].font.color.rgb = AZUL_MED
+doc.add_heading("5.5 Evolución de Recurrencia", level=2).runs[0].font.color.rgb = VERDE_MED
 
 img_path = os.path.join(FIGS,"02b_recompra_usuarios.png")
 if os.path.exists(img_path):
@@ -726,19 +768,19 @@ body(doc,
 )
 
 # Nota metodologica final
-doc.add_heading("Nota Metodológica", level=2).runs[0].font.color.rgb = AZUL_MED
+doc.add_heading("Nota Metodológica", level=2).runs[0].font.color.rgb = VERDE_MED
 body(doc,
     "Los datos presentados en este análisis fueron generados sintéticamente con la "
     "biblioteca estándar de Python (sin dependencias externas para la generación), "
     "con semilla aleatoria fija (random.seed(42)) para garantizar reproducibilidad. "
     "Los precios de green fee y los 14 clubes son reales, extraídos directamente de "
-    "gogolf.mx mediante web scraping con Playwright. Las probabilidades de lluvia "
+    "la plataforma en línea mediante web scraping con Playwright. Las probabilidades de lluvia "
     "corresponden a datos climatológicos históricos del SMN. La distribución NSE "
     "sigue la Regla AMAI 2022 adaptada al perfil de usuario de una plataforma "
     "de democratización del golf en México."
 )
 
 # Guardar
-out_path = os.path.join(BASE, "GoGolf_Secciones_3_4_5.docx")
+out_path = os.path.join(BASE, "output", "Plataforma_Golf_Secciones_3_4_5.docx")
 doc.save(out_path)
 print(f"\nDocumento guardado: {out_path}")
