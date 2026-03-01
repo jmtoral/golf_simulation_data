@@ -1,0 +1,5 @@
+id_tipo_campo,descripcion,categoria,multiplicador_precio
+CAMPO_18,18 hoyos,estandar,1.0
+CAMPO_9,9 hoyos,corto,0.55
+PITCH,Pitch & Putt,practica,0.3
+DRIVING,Driving Range,practica,0.2
