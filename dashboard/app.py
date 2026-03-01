@@ -152,12 +152,16 @@ PLOT_LAYOUT = dict(
     plot_bgcolor=BLANCO, paper_bgcolor=BLANCO,
     font=dict(family="Inter, sans-serif", color=GRIS_TEXT),
     margin=dict(t=20, b=30, l=10, r=10),
-    xaxis=dict(showgrid=False, zeroline=False),
-    yaxis=dict(showgrid=True, gridcolor="#e8ede8", zeroline=False),
 )
 
+_XAXIS_DEF = dict(showgrid=False, zeroline=False, color=GRIS_TEXT)
+_YAXIS_DEF = dict(showgrid=True, gridcolor="#e8ede8", zeroline=False, color=GRIS_TEXT)
+
 def apply_layout(fig, height=300, **kw):
-    fig.update_layout(height=height, **PLOT_LAYOUT, **kw)
+    # Merge xaxis / yaxis defaults con lo que pase el caller
+    xaxis = {**_XAXIS_DEF, **(kw.pop("xaxis", {}) or {})}
+    yaxis = {**_YAXIS_DEF, **(kw.pop("yaxis", {}) or {})}
+    fig.update_layout(height=height, xaxis=xaxis, yaxis=yaxis, **PLOT_LAYOUT, **kw)
 
 # ═══════════════════════════════════════════════════════════════════════════
 # SIDEBAR – Filtros
@@ -386,7 +390,8 @@ with tab_fin:
                       annotation_text="Promedio", annotation_position="top left")
         apply_layout(fig, height=300,
                      yaxis=dict(tickprefix="$", tickformat=",", showgrid=True,
-                                gridcolor="#e8ede8", zeroline=False))
+                                gridcolor="#e8ede8", zeroline=False,
+                                title="Ingreso promedio por reserva (MXN)"))
         st.plotly_chart(fig, use_container_width=True)
 
     with c_right:
@@ -434,8 +439,8 @@ with tab_fin:
                      color_discrete_sequence=[ROJO])
         apply_layout(fig, height=300,
                      yaxis=dict(tickprefix="$", tickformat=",", showgrid=True,
-                                gridcolor="#e8ede8", zeroline=False),
-                     yaxis_title="Ingreso cancelado (MXN)")
+                                gridcolor="#e8ede8", zeroline=False,
+                                title="Ingreso cancelado (MXN)"))
         st.plotly_chart(fig, use_container_width=True)
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -496,7 +501,7 @@ with tab_cliente:
         apply_layout(fig, height=320,
                      yaxis=dict(range=[0,5], title="Rating promedio",
                                 showgrid=True, gridcolor="#e8ede8", zeroline=False),
-                     showlegend=False)
+                     showlegend=False,)
         fig.update_traces(textposition="outside")
         st.plotly_chart(fig, use_container_width=True)
 
