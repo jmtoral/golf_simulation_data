@@ -120,7 +120,7 @@ MESES = {1:"Ene",2:"Feb",3:"Mar",4:"Abr",5:"May",6:"Jun",
          7:"Jul",8:"Ago",9:"Sep",10:"Oct",11:"Nov",12:"Dic"}
 
 @st.cache_data
-def load_all():
+def load_dataset():
     bsc     = pd.read_csv(os.path.join(PROC, "kpi_bsc_mensual.csv"))
     res     = pd.read_csv(os.path.join(DATA, "fact_reservas.csv"))
     cancel  = pd.read_csv(os.path.join(DATA, "fact_cancelaciones.csv"))
@@ -137,7 +137,7 @@ def load_all():
 
     return bsc, res, cancel, noshow, ratings, fricc, clubs, jugs, inv
 
-bsc, res, cancel, noshow, ratings, fricc, clubs, jugs, inv = load_all()
+bsc, res, cancel, noshow, ratings, fricc, clubs, jugs, inv = load_dataset()
 
 # Columnas derivadas fuera del cache para que siempre estén presentes
 bsc["periodo"] = pd.to_datetime(
