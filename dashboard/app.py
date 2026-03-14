@@ -190,7 +190,12 @@ def apply_layout(fig, height=300, **kw):
 # SIDEBAR – Filtros
 # ═══════════════════════════════════════════════════════════════════════════
 with st.sidebar:
-    st.image("https://raw.githubusercontent.com/jmtoral/golf_simulation_data/master/input/bg-removebg-preview.png", width=200)
+    from PIL import Image
+    logo_path = os.path.join(BASE, "input", "bg-removebg-preview.png")
+    if os.path.exists(logo_path):
+        st.image(Image.open(logo_path), width=200)
+    else:
+        st.write("Logo no encontrado")
     st.markdown("<hr/>", unsafe_allow_html=True)
     st.markdown("#### Filtros")
 
