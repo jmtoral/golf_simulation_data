@@ -190,7 +190,7 @@ def apply_layout(fig, height=300, **kw):
 # SIDEBAR – Filtros
 # ═══════════════════════════════════════════════════════════════════════════
 with st.sidebar:
-    st.image("https://gogolf.mx/build/images/logo-light.svg", width=200)
+    st.image("https://raw.githubusercontent.com/jmtoral/golf_simulation_data/master/input/bg-removebg-preview.png", width=200)
     st.markdown("<hr/>", unsafe_allow_html=True)
     st.markdown("#### Filtros")
 
@@ -266,9 +266,10 @@ tab_resumen, tab_fin, tab_cliente, tab_procesos, tab_friccion, tab_clubes = st.t
 with tab_resumen:
 
     sec("KPIs Globales del Período")
-    c1,c2,c3,c4,c5,c6 = st.columns(6)
+    c1,c2,c3,c4,c5,c6,c7 = st.columns(7)
 
     total_res      = len(res_f)
+    total_gf       = res_f["num_jugadores_grupo"].sum()
     tasa_can_glob  = res_f[res_f.estatus_reserva=="cancelada"].shape[0] / max(total_res,1) * 100
     tasa_ns_glob   = res_f[res_f.estatus_reserva=="no_show"].shape[0]   / max(total_res,1) * 100
     ing_total      = res_f["ingreso_total_mxn"].sum()
@@ -276,11 +277,12 @@ with tab_resumen:
     nps_val        = bsc_f["nps_proxy"].mean()
 
     kpi_card(c1, "Total Reservas",    f"{total_res:,}")
-    kpi_card(c2, "Ingreso Total",     f"${ing_total/1e6:.1f}M")
-    kpi_card(c3, "Comisión GoGolf",   f"${com_total/1e6:.1f}M")
-    kpi_card(c4, "Tasa Cancelación",  f"{tasa_can_glob:.1f}%",  color="naranja")
-    kpi_card(c5, "Tasa No-Show",      f"{tasa_ns_glob:.1f}%",   color="rojo")
-    kpi_card(c6, "NPS Proxy",         f"{nps_val:.1f}",
+    kpi_card(c2, "Total Green Fees",  f"{total_gf:,}")
+    kpi_card(c3, "Ingreso Total",     f"${ing_total/1e6:.1f}M")
+    kpi_card(c4, "Comisión GoGolf",   f"${com_total/1e6:.1f}M")
+    kpi_card(c5, "Tasa Cancel.",      f"{tasa_can_glob:.1f}%",  color="naranja")
+    kpi_card(c6, "Tasa No-Show",      f"{tasa_ns_glob:.1f}%",   color="rojo")
+    kpi_card(c7, "NPS Proxy",         f"{nps_val:.1f}",
              color="rojo" if nps_val < 0 else "verde")
 
     st.markdown("<br/>", unsafe_allow_html=True)
@@ -772,9 +774,21 @@ with tab_clubes:
     club_agg["pct_fric"] = club_agg["fric_n"]  /club_agg["reservas"]*100
     club_agg = club_agg.merge(
         clubs[["nombre_club","tipo_club","num_hoyos","estado",
-               "requisito_dress_code","nse_minimo_acceso"]],
+               "requisito_dress_code","nse_minimo_acceso","fecha_integracion"]],
         on="nombre_club", how="left"
     )
+
+    sec("Ritmo de Integración de Clubes")
+    if "fecha_integracion" in clubs.columns:
+        rollout = clubs.groupby("fecha_integracion").size().reset_index(name="nuevos_clubes")
+        rollout = rollout.sort_values("fecha_integracion")
+        rollout["clubes_acumulados"] = rollout["nuevos_clubes"].cumsum()
+        
+        fig_r = px.area(rollout, x="fecha_integracion", y="clubes_acumulados",
+                        markers=True, color_discrete_sequence=[VERDE_P])
+        apply_layout(fig_r, height=300, yaxis_title="Total de clubes activos",
+                     xaxis_title="Fecha de Integración (Mes)")
+        st.plotly_chart(fig_r, use_container_width=True)
 
     tipo_colors = {
         "resort":       VERDE_OSC,

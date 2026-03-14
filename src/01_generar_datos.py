@@ -47,21 +47,26 @@ def csv_write(filename, fieldnames, rows):
 
 clubes_raw = [
     # cid, nombre, ciudad, estado, tipo, hoyos, par, yardas, gf_lv, gf_fs, cierre, lat, lon,
-    # handicap_max, dress_code, equipo_propio, reserva_min_dias, nse_min
-    ("CLB001","Campestre Cocoyoc",               "Yautepec",             "Morelos",          "semi-privado",18,72,6744,1800,2280,{"martes"}, 18.9154,-98.9389,  36,"moderado","NO",1, 3),
-    ("CLB002","Club Campestre Coatzacoalcos",    "Coatzacoalcos",        "Veracruz",         "semi-privado", 9,71,6376,1300,1300,{"lunes"},  18.1500,-94.4300,  54,"moderado","NO",1, 4),
-    ("CLB003","Club de Golf Hacienda Soltepec",  "Huamantla",            "Tlaxcala",         "publico",       9,72,5772, 750, 850,{"lunes"},  19.3167,-97.9167,None,"ninguno", "NO",0, 4),
-    ("CLB004","Club de Golf La Purisima",        "Texcoco",              "Estado de Mexico", "semi-privado",18,55,   0, 800,1600,set(),       19.5167,-98.8833,  54,"moderado","NO",1, 4),
-    ("CLB005","Club de Golf Malanquin",          "San Miguel de Allende","Guanajuato",       "privado",      18,72,7289,2650,3300,{"lunes"},  20.9000,-100.7333, 28,"estricto","SI",2, 2),
-    ("CLB006","Club de Golf Santa Fe",           "Ciudad de Mexico",     "CDMX",             "privado",      18,72,7000, 750,1250,{"lunes"},  19.3600,-99.2700,  36,"estricto","SI",2, 2),
-    ("CLB007","Club de Golf Santa Gertrudis",    "Orizaba",              "Veracruz",         "historico",     9,70,   0, 950,1350,{"lunes"},  18.8500,-97.1000,  54,"moderado","NO",1, 3),
-    ("CLB008","Club de Golf Tequisquiapan",      "Tequisquiapan",        "Queretaro",        "privado",      18,72,   0,2500,3500,{"martes"}, 20.5333,-99.8833,  28,"estricto","SI",3, 2),
-    ("CLB009","Club de Golf Villa Rica",         "Veracruz",             "Veracruz",         "privado",      18,72,   0,1500,2500,{"lunes"},  19.2000,-96.1333,  36,"moderado","SI",2, 3),
-    ("CLB010","Club de Golf Xalapa",             "Xalapa",               "Veracruz",         "semi-privado", 18,72,   0,1500,2000,{"lunes"},  19.5333,-96.9500,  54,"moderado","NO",1, 3),
-    ("CLB011","El Tigre Golf Club",              "Nuevo Vallarta",       "Nayarit",          "resort",       18,72,7200,5330,5330,set(),       20.7000,-105.2833,None,"moderado","NO",0, 2),
-    ("CLB012","El Tinto Golf Course",            "Cancun",               "Quintana Roo",     "resort",       18,72,7435,2600,3600,set(),       21.1000,-86.8700, None,"moderado","NO",0, 3),
-    ("CLB013","Hard Rock Golf Club Riviera Maya","Playa del Carmen",     "Quintana Roo",     "resort",       18,71,6775,3800,4600,set(),       20.6296,-87.0739, None,"moderado","NO",0, 2),
-    ("CLB014","Riviera Cancun Golf Club",        "Cancun",               "Quintana Roo",     "resort",       18,72,   0,3800,4600,set(),       21.0500,-86.8700, None,"estricto","SI",1, 2),
+    # handicap_max, dress_code, equipo_propio, reserva_min_dias, nse_min, fecha_integracion
+    ("CLB001","Campestre Cocoyoc",               "Yautepec",             "Morelos",          "semi-privado",18,72,6744, 2000, 2500,{"martes"}, 18.9154,-98.9389,  36,"moderado","NO",1, 3, "2023-01-15"),
+    ("CLB002","Club Campestre Coatzacoalcos",    "Coatzacoalcos",        "Veracruz",         "semi-privado", 9,71,6376, 1200, 1600,{"lunes"},  18.1500,-94.4300,  54,"moderado","NO",1, 4, "2023-01-20"),
+    ("CLB003","Club de Golf Hacienda Soltepec",  "Huamantla",            "Tlaxcala",         "publico",       9,72,5772,  500,  800,{"lunes"},  19.3167,-97.9167,None,"ninguno", "NO",0, 4, "2023-01-25"),
+    ("CLB004","Club de Golf La Purisima",        "Texcoco",              "Estado de Mexico", "semi-privado",18,55,   0, 1000, 1800,set(),       19.5167,-98.8833,  54,"moderado","NO",1, 4, "2023-02-15"),
+    ("CLB005","Club de Golf Malanquin",          "San Miguel de Allende","Guanajuato",       "privado",      18,72,7289, 2800, 3500,{"lunes"},  20.9000,-100.7333, 28,"estricto","SI",2, 2, "2023-02-28"),
+    ("CLB006","Club de Golf Santa Fe",           "Ciudad de Mexico",     "CDMX",             "privado",      18,72,7000, 3500, 5000,{"lunes"},  19.3600,-99.2700,  36,"estricto","SI",2, 2, "2023-03-10"),
+    ("CLB007","Club de Golf Santa Gertrudis",    "Orizaba",              "Veracruz",         "historico",     9,70,   0, 1200, 1600,{"lunes"},  18.8500,-97.1000,  54,"moderado","NO",1, 3, "2023-04-10"),
+    ("CLB008","Club de Golf Tequisquiapan",      "Tequisquiapan",        "Queretaro",        "privado",      18,72,   0, 2500, 3500,{"martes"}, 20.5333,-99.8833,  28,"estricto","SI",3, 2, "2023-05-15"),
+    ("CLB009","Club de Golf Villa Rica",         "Veracruz",             "Veracruz",         "privado",      18,72,   0, 1800, 2800,{"lunes"},  19.2000,-96.1333,  36,"moderado","SI",2, 3, "2023-06-20"),
+    ("CLB010","Club de Golf Xalapa",             "Xalapa",               "Veracruz",         "semi-privado", 18,72,   0, 1500, 2200,{"lunes"},  19.5333,-96.9500,  54,"moderado","NO",1, 3, "2023-07-25"),
+    ("CLB011","El Tigre Golf Club",              "Nuevo Vallarta",       "Nayarit",          "resort",       18,72,7200, 6000, 6000,set(),       20.7000,-105.2833,None,"moderado","NO",0, 2, "2023-08-30"),
+    ("CLB012","El Tinto Golf Course",            "Cancun",               "Quintana Roo",     "resort",       18,72,7435, 3000, 4500,set(),       21.1000,-86.8700, None,"moderado","NO",0, 3, "2023-09-05"),
+    ("CLB013","Hard Rock Golf Club Riviera Maya","Playa del Carmen",     "Quintana Roo",     "resort",       18,71,6775, 4500, 5500,set(),       20.6296,-87.0739, None,"moderado","NO",0, 2, "2023-10-15"),
+    ("CLB014","Riviera Cancun Golf Club",        "Cancun",               "Quintana Roo",     "resort",       18,72,   0, 8000,10000,set(),       21.0500,-86.8700, None,"estricto","SI",1, 2, "2023-11-20"),
+    ("CLB015","Amanali Country Club",            "Tepeji del Rio",       "Hidalgo",          "privado",      18,72,7300, 2500, 3500,set(),       19.9213,-99.3496, 36,"moderado","NO",1, 2, "2023-12-10"),
+    ("CLB016","Club de Golf Chapultepec",        "Naucalpan",            "Estado de Mexico", "privado",      18,72,7330, 6000, 8000,{"lunes"},   19.4261,-99.2325, 28,"estricto","SI",2, 1, "2024-01-15"),
+    ("CLB017","Bosque Real Country Club",        "Huixquilucan",         "Estado de Mexico", "privado",      18,72,7100, 4000, 5000,{"lunes"},   19.3900,-99.2900, 36,"estricto","SI",2, 1, "2024-02-20"),
+    ("CLB018","Club Campestre Monterrey",        "Monterrey",            "Nuevo Leon",       "privado",      18,72,7250, 5000, 7000,{"lunes"},   25.6315,-100.3204,28,"estricto","SI",3, 1, "2024-03-05"),
+    ("CLB019","Punta Mita Golf Club",            "Punta de Mita",        "Nayarit",          "resort",       18,72,7014, 8500,10000,set(),       20.7633,-105.5265,None,"moderado","NO",0,1, "2024-04-10"),
 ]
 
 REGION_LLUVIA = {
@@ -70,12 +75,14 @@ REGION_LLUVIA = {
     "CLB007":"veracruz_sierra","CLB008":"queretaro","CLB009":"veracruz_costa",
     "CLB010":"veracruz_sierra","CLB011":"pacifico_norte",
     "CLB012":"caribe","CLB013":"caribe","CLB014":"caribe",
+    "CLB015":"cdmx_edomex","CLB016":"cdmx_edomex","CLB017":"cdmx_edomex",
+    "CLB018":"bajio","CLB019":"pacifico_norte",
 }
 
 dim_club = []
 for row in clubes_raw:
     (cid,nombre,ciudad,estado,tipo,hoyos,par,yardas,gf_lv,gf_fs,cierre,
-     lat,lon,hdcp,dress,equipo,res_min,nse_min) = row
+     lat,lon,hdcp,dress,equipo,res_min,nse_min,fecha_int) = row
     dim_club.append({
         "id_club":                cid,
         "nombre_club":            nombre,
@@ -95,17 +102,19 @@ for row in clubes_raw:
         "nse_minimo_acceso":      nse_min,
         "latitud":                lat,
         "longitud":               lon,
+        "fecha_integracion":      fecha_int,
         "fuente":                 "gogolf.mx",
         "activo":                 "SI",
     })
 csv_write("dim_club.csv", list(dim_club[0].keys()), dim_club)
 
-CIERRE_MAP  = {r[0]: r[10] for r in clubes_raw}
-NSE_MIN_MAP = {r[0]: r[17] for r in clubes_raw}
-DRESS_MAP   = {r[0]: r[14] for r in clubes_raw}
-HDCP_MAP    = {r[0]: r[13] for r in clubes_raw}
-EQUIPO_MAP  = {r[0]: r[15] for r in clubes_raw}
-RESMIN_MAP  = {r[0]: r[16] for r in clubes_raw}
+CIERRE_MAP      = {r[0]: r[10] for r in clubes_raw}
+NSE_MIN_MAP     = {r[0]: r[17] for r in clubes_raw}
+DRESS_MAP       = {r[0]: r[14] for r in clubes_raw}
+HDCP_MAP        = {r[0]: r[13] for r in clubes_raw}
+EQUIPO_MAP      = {r[0]: r[15] for r in clubes_raw}
+RESMIN_MAP      = {r[0]: r[16] for r in clubes_raw}
+INTEGRACION_MAP = {r[0]: date.fromisoformat(r[18]) for r in clubes_raw}
 
 # =============================================================================
 # 2. DIM_CAMPO
@@ -260,12 +269,10 @@ CAMPO_PESOS = [0.65,0.25,0.06,0.04]
 #    con incidencia (cumplimiento parcial de requisitos).
 # =============================================================================
 TIPOS_FRICCION = [
-    "dress_code_incumplido",
-    "equipo_no_propio_requerido",
-    "handicap_excedido",
+    "llegada_tarde",
+    "handicap_horario_restringido",
     "anticipacion_insuficiente",
     "discrepancia_inventario",
-    "rechazo_en_puerta",
 ]
 
 def evaluar_friccion(jugador, club, dias_anticipacion):
@@ -276,50 +283,30 @@ def evaluar_friccion(jugador, club, dias_anticipacion):
     fricciones = []
     prob_rechazo_extra = 0.0
 
-    nse_jug = jugador["nse"]     # AB, Cmas, C, Dmas
-    nse_min = NSE_MIN_MAP[club["id_club"]]  # 2=B, 3=C+, 4=C
+    # 1. Llegada tarde
+    if random.random() < 0.04: # 4% base de llegadas tarde
+        fricciones.append("llegada_tarde")
+        prob_rechazo_extra += 0.70 # Alta prob de que termine sin jugar si llega tarde
 
-    nse_orden = {"AB":1,"Cmas":2,"C":3,"Dmas":4}
-    nse_jug_n = nse_orden[nse_jug]
-
-    # 1. Dress code
-    dress = DRESS_MAP[club["id_club"]]
-    if dress == "estricto" and jugador["conoce_dress_code"] == "NO":
-        fricciones.append("dress_code_incumplido")
-        prob_rechazo_extra += 0.18
-    elif dress == "moderado" and jugador["conoce_dress_code"] == "NO":
-        fricciones.append("dress_code_incumplido")
-        prob_rechazo_extra += 0.06
-
-    # 2. Equipo propio
-    if EQUIPO_MAP[club["id_club"]] == "SI" and jugador["tiene_equipo_propio"] == "NO":
-        fricciones.append("equipo_no_propio_requerido")
-        prob_rechazo_extra += 0.12
-
-    # 3. Handicap
+    # 2. Handicap (Causa restriccion de horario, a veces quejas, pero no rechazo directo)
     hdcp_max = HDCP_MAP[club["id_club"]]
     if hdcp_max and isinstance(hdcp_max, int):
         if jugador["handicap_declarado"] > hdcp_max:
-            fricciones.append("handicap_excedido")
-            prob_rechazo_extra += 0.20
+            fricciones.append("handicap_horario_restringido")
+            prob_rechazo_extra += 0.02 # Friccion muy leve (les molesta la restriccion)
 
-    # 4. Anticipacion minima
+    # 3. Anticipacion minima
     res_min = RESMIN_MAP[club["id_club"]]
     if dias_anticipacion < res_min:
         fricciones.append("anticipacion_insuficiente")
         prob_rechazo_extra += 0.05
 
-    # 5. Brecha NSE general (jugador de NSE bajo en club de NSE alto)
-    if nse_jug_n > nse_min:
-        brecha = nse_jug_n - nse_min
-        prob_rechazo_extra += brecha * 0.07  # cada nivel de brecha suma 7%
-
-    # 6. Discrepancia inventario (independiente del jugador, falla del sistema)
-    if random.random() < 0.04:   # 4% base de discrepancias
+    # 4. Discrepancia inventario (independiente del jugador, falla del sistema)
+    if random.random() < 0.02:   # 2% base de discrepancias
         fricciones.append("discrepancia_inventario")
-        prob_rechazo_extra += 0.10
+        prob_rechazo_extra += 0.30
 
-    return fricciones, min(prob_rechazo_extra, 0.75)
+    return fricciones, min(prob_rechazo_extra, 0.95)
 
 # =============================================================================
 # 7. FACT_RESERVAS
@@ -333,17 +320,17 @@ HORARIOS     = ["06:00","06:30","07:00","07:30","08:00","08:30","09:00","09:30",
 # Costo variable por reserva (operacion GoGolf): procesamiento pago, soporte
 COSTO_VAR_BASE_MXN = 45.0
 
-def reservas_dia(fecha_obj, jug_activos):
-    dias = (fecha_obj - date(2023,1,1)).days
-    base = max(8, jug_activos * 0.03 / 30 * 20 + 30*(dias/730))
+def reservas_dia(fecha_obj, jug_activos, clubes_disp_count):
+    # Meta maxima: ~100 green fees al mes por campo = ~30 reservas = ~1 reserva/dia por campo activo
+    base = min(1.2, jug_activos * 0.08 / 30) * clubes_disp_count
     mes  = fecha_obj.month
     if mes in (5,6,7,8,12): base *= 1.30
     elif mes in (2,11):      base *= 0.80
     if fecha_obj.weekday() >= 5: base *= 1.50
     if fecha_obj in FESTIVOS:    base *= 1.20
-    return max(8, int(base + random.gauss(0, base*0.10)))
+    return max(1, int(base + random.gauss(0, base*0.15)))
 
-CLUB_PESOS_BASE = [1.0,0.6,0.5,0.7,0.8,0.9,0.5,0.8,0.6,0.6,1.2,1.0,1.0,1.0]
+CLUB_PESOS_BASE = [1.0,0.6,0.5,0.7,0.8,0.9,0.5,0.8,0.6,0.6,1.2,1.0,1.0,1.0,0.8,0.9,0.7,0.7,1.1]
 
 fact_reservas       = []
 reservas_canceladas = []
@@ -367,11 +354,13 @@ for fid in fechas_ids:
                 if date.fromisoformat(j["fecha_registro"]) <= fecha_obj]
     if not pool_jug: pool_jug = jugadores_ids[:10]
 
-    n_res = reservas_dia(fecha_obj, jug_activos)
+    clubes_abiertos = [c for c in dim_club if INTEGRACION_MAP[c["id_club"]] <= fecha_obj]
+    n_res = reservas_dia(fecha_obj, jug_activos, len(clubes_abiertos))
 
     for _ in range(n_res):
         # Club disponible ese dia
-        clubes_disp  = [c for c in dim_club if dow_nombre not in CIERRE_MAP[c["id_club"]]]
+        clubes_disp  = [c for c in clubes_abiertos if dow_nombre not in CIERRE_MAP[c["id_club"]]]
+        if not clubes_disp: continue
         pesos_disp   = [CLUB_PESOS_BASE[dim_club.index(c)] for c in clubes_disp]
         if mes in (5,6,7,8,12):
             pesos_disp = [p*(1.5 if c["tipo_club"]=="resort" else 1.0)
@@ -394,12 +383,13 @@ for fid in fechas_ids:
         precio   = round(int(gf_base) * campo["multiplicador_precio"] * random.uniform(0.97,1.03), 2)
         num_jug  = random.choices([1,2,3,4],[0.20,0.35,0.30,0.15])[0]
         ingreso  = round(precio * num_jug, 2)
-        tasa_com = round(random.uniform(0.08,0.12),4)
-        comision = round(ingreso * tasa_com, 2)
+        # GoGolf cobra 22% del green fee + $25 MXN por reserva
+        tasa_com = 0.22 
+        comision = round((ingreso * tasa_com) + 25.0, 2)
 
-        # Costo variable (incluye procesamiento + soporte proporcional a NSE bajo)
+        # Costo variable (incluye procesamiento + soporte)
         nse_n    = {"AB":1,"Cmas":2,"C":3,"Dmas":4}[jugador["nse"]]
-        costo_var = round(COSTO_VAR_BASE_MXN * (1 + (nse_n-1)*0.15), 2)  # mas soporte en NSE bajo
+        costo_var = round(COSTO_VAR_BASE_MXN * (1 + (nse_n-1)*0.15), 2)
         margen    = round((comision - costo_var) / comision, 4) if comision > 0 else 0.0
 
         # Dias de anticipacion
@@ -411,6 +401,11 @@ for fid in fechas_ids:
         # --- FRICCION SOCIAL ---
         fricciones_act, prob_rechazo_extra = evaluar_friccion(jugador, club, dias_ant)
         hay_friccion = len(fricciones_act) > 0
+        
+        horario_escogido = random.choice(HORARIOS)
+        if "handicap_horario_restringido" in fricciones_act:
+            horarios_tarde = [h for h in HORARIOS if int(h.split(":")[0]) >= 11]
+            horario_escogido = random.choice(horarios_tarde)
 
         # Registrar fricciones en tabla aparte
         for tipo_fric in fricciones_act:
@@ -436,17 +431,19 @@ for fid in fechas_ids:
         hay_lluvia = random.random() < p_lluvia
 
         # Estatus: ajustado por friccion + lluvia
-        pesos_est = list(ESTATUS_BASE)
+        # Las cancelaciones deben ser mas altas que los no-shows (regla de negocio)
+        pesos_est = [("confirmada",0.75),("cancelada",0.16),("no_show",0.04),("completada",0.05)]
         if hay_lluvia:
-            pesos_est = [("confirmada",0.48),("cancelada",0.28),("no_show",0.17),("completada",0.07)]
+            pesos_est = [("confirmada",0.50),("cancelada",0.30),("no_show",0.10),("completada",0.10)]
         if hay_friccion:
-            # Friccion aumenta no-show y cancelacion de ultima hora
-            conf_w = max(0.20, pesos_est[0][1] - prob_rechazo_extra*0.5)
-            ns_w   = min(0.40, pesos_est[2][1] + prob_rechazo_extra*0.4)
-            can_w  = min(0.35, pesos_est[1][1] + prob_rechazo_extra*0.1)
+            # Friccion aumenta fuertemente el no-show si llegan tarde (rechazo velado)
+            conf_w = max(0.10, pesos_est[0][1] - prob_rechazo_extra*0.5)
+            ns_w   = min(0.60, pesos_est[2][1] + prob_rechazo_extra*0.6)
+            can_w  = min(0.35, pesos_est[1][1] + prob_rechazo_extra*0.2)
             com_w  = pesos_est[3][1]
-            pesos_est = [("confirmada",conf_w),("cancelada",can_w),
-                         ("no_show",ns_w),("completada",com_w)]
+            tot    = conf_w + ns_w + can_w + com_w
+            pesos_est = [("confirmada",conf_w/tot),("cancelada",can_w/tot),
+                         ("no_show",ns_w/tot),("completada",com_w/tot)]
 
         estatus = random.choices([e for e,_ in pesos_est],[w for _,w in pesos_est])[0]
 
@@ -468,7 +465,8 @@ for fid in fechas_ids:
 
         rid = f"RES{reserva_id:07d}"
 
-        perdida_noshow = round(ingreso*0.90, 2) if estatus=="no_show" else 0.0
+        # Pierden todo el dinero si es no_show
+        perdida_noshow = round(ingreso, 2) if estatus=="no_show" else 0.0
 
         row = {
             "id_reserva":                  rid,
@@ -477,7 +475,7 @@ for fid in fechas_ids:
             "id_jugador":                  jug_id,
             "id_tipo_campo":               tipo_c,
             "nse_jugador":                 jugador["nse"],
-            "horario_tee_time":            random.choice(HORARIOS),
+            "horario_tee_time":            horario_escogido,
             "num_jugadores_grupo":         num_jug,
             "es_fin_semana":               "SI" if es_fin else "NO",
             "hubo_lluvia":                 "SI" if hay_lluvia else "NO",
@@ -519,7 +517,7 @@ MOTIVOS_CANCEL = [
     ("trabajo_compromiso",0.15),("requisito_no_cumplido",0.12),
     ("precio_alto",0.12),("error_sistema",0.05),("otro",0.04),
 ]
-TIPO_CANCEL = [("anticipada_>48h",0.45),("anticipada_24-48h",0.30),("last_minute_<24h",0.25)]
+TIPO_CANCEL = [("anticipada_>48h",0.60),("anticipada_24-48h",0.40)]
 
 fact_cancelaciones = []
 for rid, precio, num_jug, con_friccion in reservas_canceladas:
@@ -533,20 +531,23 @@ for rid, precio, num_jug, con_friccion in reservas_canceladas:
         motivos_adj = MOTIVOS_CANCEL
     motivo = random.choices([m for m,_ in motivos_adj],[w for _,w in motivos_adj])[0]
     tipo   = random.choices([t for t,_ in TIPO_CANCEL],[w for _,w in TIPO_CANCEL])[0]
-    reembolso = 1.0 if tipo=="anticipada_>48h" else (random.uniform(0.50,0.75) if tipo=="anticipada_24-48h" else 0.0)
-    horas = {"anticipada_>48h":random.randint(49,240),"anticipada_24-48h":random.randint(24,48),"last_minute_<24h":random.randint(0,23)}[tipo]
+    reembolso = 1.0 - 0.089 # Penalizacion del 8.9%
+    horas = {"anticipada_>48h":random.randint(49,240),"anticipada_24-48h":random.randint(24,48)}[tipo]
     ingreso_cancel = round(precio*num_jug,2)
+    # GoGolf retiene el 8.9% de cancelacion
+    comision_retenida = round(ingreso_cancel * 0.089, 2)
+    
     fact_cancelaciones.append({
         "id_cancelacion":             f"CAN{len(fact_cancelaciones)+1:07d}",
         "id_reserva":                 rid,
         "motivo_cancelacion":         motivo,
         "tipo_cancelacion":           tipo,
         "horas_antes_tee_time":       horas,
-        "pct_reembolso":              round(reembolso,2),
-        "penalizacion_aplicada":      "SI" if reembolso<1.0 else "NO",
+        "pct_reembolso":              round(reembolso,4),
+        "penalizacion_aplicada":      "SI",
         "ingreso_cancelado_mxn":      ingreso_cancel,
         "cancelacion_por_friccion":   "SI" if con_friccion else "NO",
-        "perdida_comision_gogolf_mxn":round(ingreso_cancel*(1-reembolso)*0.10,2),
+        "comision_retenida_gogolf_mxn": comision_retenida,
     })
 csv_write("fact_cancelaciones.csv", list(fact_cancelaciones[0].keys()), fact_cancelaciones)
 
@@ -566,9 +567,9 @@ for rid, precio, num_jug, id_club, lluvia, friccion, fricc_tipos in reservas_nos
         "lluvia_como_factor":            "SI" if lluvia else "NO",
         "friccion_social_como_factor":   "SI" if friccion else "NO",
         "num_jugadores_noshow":          num_jug,
-        "ingreso_perdido_club_mxn":      round(ingreso_perdido*0.90,2),
-        "comision_perdida_gogolf_mxn":   round(ingreso_perdido*0.10,2),
-        "perdida_total_estimada_mxn":    ingreso_perdido,
+        "ingreso_perdido_club_mxn":      0.0, # El campo no pierde, pago ex-ante
+        "comision_perdida_gogolf_mxn":   0.0, # GoGolf retiene su comision
+        "perdida_total_estimada_mxn":    ingreso_perdido, # Pierde el jugador al 100%
     })
 csv_write("fact_noshow.csv", list(fact_noshow[0].keys()), fact_noshow)
 

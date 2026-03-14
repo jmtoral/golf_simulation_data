@@ -41,6 +41,16 @@ streamlit run dashboard/app.py
 
 ---
 
+## Cambios Implementados (Feedback del Cliente)
+
+- **Crecimiento de Clubes:** Se simula la integración paulatina de 19 clubes (rango de green fee de $500 a $10,000 MXN, promedio ~$2,000 MXN). Capacidad de reservas acotada a la realidad del mercado (~100 green fees al mes por club como límite superior teórico).
+- **Modelo de Ingresos:** GoGolf cobra una comisión del 22% sobre el green fee + una tarifa de $25 MXN por reserva.
+- **Cancelaciones y No-Shows:** Las cancelaciones con menos de 24 horas ahora son "no-show" (pérdida del 100% para el jugador). Para cancelaciones válidas, GoGolf retiene un **8.9%** sobre el monto cancelado.
+- **Fricción Social Realista:** Se redujo el impacto de rechazos directos por código de vestimenta. La fricción crítica causante de no-shows ahora es la **"llegada tarde"**. Exceder el hándicap máximo del club resulta en una **restricción de horario** (tee times asignados después de las 11:00 AM) en lugar de un rechazo.
+- **Dashboard Actualizado:** Nuevo KPI superior de "Total Green Fees" y gráfica dinámica "Ritmo de Integración de Clubes" mostrando el despunte de oferta.
+
+---
+
 ## Hallazgos Estratégicos
 
 Los hallazgos se presentan alineados con la lógica causa–efecto del Balanced Scorecard:
